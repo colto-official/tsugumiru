@@ -1474,6 +1474,7 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
   /* ───── Config ───── */
   // APIキーはサーバーサイドで設定してください
   var API_KEY = '';
+  var MODEL = 'claude-opus-4-6';
   var SYSTEM_PROMPT = '絶対にコードフェンス（```json や ```）を使わないこと。{ で始まり } で終わるJSONのみを返答すること。\n\n' +
     'あなたは相続業界で20年以上の経験を持つ専門家です。税理士・弁護士・司法書士・不動産鑑定士と連携し、数百件の相続案件を手がけてきました。\n\n' +
     'あなたの役割は、ユーザーの相続診断結果をもとに「知らないと損をする」本音の情報を提供することです。\n\n' +
@@ -1700,19 +1701,16 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     document.getElementById('loadingWrap').classList.add('show');
     scrollTop();
 
-    fetch('https://api.anthropic.com/v1/messages', {
+    fetch('/.netlify/functions/claude-api', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'claude-opus-4-6',
         max_tokens: 16000,
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildUserPrompt(answers) }]
+        user: buildUserPrompt(answers)
       })
     })
     .then(function(res){
