@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>つぐみる - 相続診断</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary:   #2E8B57;
+      --primary-l: #4CAF82;
+      --secondary: #D4EDDA;
+      --accent:    #E07B00;
+      --base:      #FFFFFF;
+      --bg:        #F5F5F5;
+      --border:    #CCCCCC;
+      --text:      #1A1A1A;
+      --muted:     #595959;
+      --heading:   #1B5E37;
+      --danger:    #CC0000;
+      --info:      #0077B6;
+    }
+
+    body {
+      font-family: 'Hiragino Maru Gothic ProN','BIZ UDPGothic','Noto Sans JP','Hiragino Sans','Yu Gothic','Meiryo',sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    /* ─── Header ─── */
+    .header { width: 100%; line-height: 0; margin: 0; padding: 0; }
+    .header-image { width: 100%; height: auto; display: block; }
+
+    /* ─── Container ─── */
+    .container { max-width: 720px; margin: 0 auto; padding: 28px 16px 80px; }
+
+    /* ─── Card base ─── */
+    .card {
+      background: var(--base);
+      border-radius: 20px;
+      padding: 30px 24px;
+      box-shadow: 0 2px 14px rgba(46,139,87,.12);
+      border: 1px solid var(--border);
+      margin-bottom: 22px;
+    }
+
+    /* ─── Progress ─── */
+    .progress-wrap { margin-bottom: 28px; }
+    .step-labels { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .step-label {
+      font-size: .88rem;
+      color: var(--muted);
+      text-align: center;
+      flex: 1;
+      transition: color .3s;
+      line-height: 1.5;
+    }
+    .step-label.active { color: var(--heading); font-weight: 700; }
+    .step-label.done   { color: var(--primary); }
+
+    .bar-track { height: 14px; background: var(--border); border-radius: 7px; margin-bottom: -7px; }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-l));
+      border-radius: 7px;
+      transition: width .5s ease;
+    }
+    .dots { display: flex; justify-content: space-between; }
+    .dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--border);
+      border: 3px solid var(--base);
+      box-shadow: 0 0 0 2px var(--border);
+      transition: all .3s;
+    }
+    .dot.active, .dot.done { background: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+
+    /* ─── Step Cards ─── */
+    .step-card { display: none; }
+    .step-card.active { display: block; animation: slideUp .38s ease both; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: .88rem;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      white-space: nowrap;
+    }
+    .step-desc { font-size: 1rem; color: var(--muted); margin-bottom: 28px; line-height: 1.8; }
+
+    .q-group { margin-bottom: 30px; }
+    .q-label {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.8;
+    }
+    .req { color: #E74C3C; font-size: .9rem; font-weight: 700; }
+
+    .radio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+      gap: 12px;
+    }
+    .radio-grid.two { grid-template-columns: 1fr 1fr; }
+
+    .r-item { position: relative; }
+    .r-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .r-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 14px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      text-align: center;
+      transition: all .18s;
+      background: var(--bg);
+      user-select: none;
+      min-height: 66px;
+      line-height: 1.5;
+    }
+    .r-item input:checked + .r-label {
+      border-color: var(--primary);
+      background: var(--secondary);
+      color: var(--heading);
+      font-weight: 700;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .r-label:hover { border-color: var(--primary); background: rgba(46,139,87,.08); }
+    .r-item input:focus-visible + .r-label { outline: 3px solid var(--primary); outline-offset: 3px; }
+
+    .chk-list { display: flex; flex-direction: column; gap: 14px; }
+    .chk-item { position: relative; }
+    .chk-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .chk-label {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 22px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all .18s;
+      background: var(--bg);
+      user-select: none;
+      min-height: 68px;
+      line-height: 1.5;
+    }
+    .chk-label::before {
+      content: '';
+      width: 28px; height: 28px;
+      min-width: 28px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      transition: all .18s;
+    }
+    .chk-item input:checked + .chk-label {
+      border-color: var(--primary);
+      background: var(--secondary);
+      color: var(--heading);
+      font-weight: 700;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .chk-item input:checked + .chk-label::before {
+      background: var(--primary);
+      border-color: var(--primary);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .chk-label:hover { border-color: var(--primary); background: rgba(46,139,87,.08); }
+    .chk-item input:focus-visible + .chk-label { outline: 3px solid var(--primary); outline-offset: 3px; }
+
+    /* ─── Nav buttons ─── */
+    .nav-btns { display: flex; gap: 14px; margin-top: 32px; }
+    .btn {
+      padding: 18px 28px;
+      border-radius: 16px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: all .2s;
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      flex: 1;
+      box-shadow: 0 4px 13px rgba(46,139,87,.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(46,139,87,.45); background: var(--primary-l); }
+    .btn-back {
+      background: #ffffff;
+      color: var(--primary);
+      border: 2px solid var(--border);
+      min-width: 110px;
+    }
+    .btn-back:hover { border-color: var(--primary); background: var(--bg); }
+    .btn-diagnose {
+      background: var(--accent);
+      color: #ffffff;
+      flex: 1;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 13px rgba(224,123,0,.35);
+    }
+    .btn-diagnose:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(224,123,0,.45); filter: brightness(1.08); }
+    .btn-diagnose:disabled {
+      background: #AAAAAA;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+      filter: none;
+    }
+    .btn-diagnose:disabled:hover { transform: none; box-shadow: none; filter: none; }
+
+    /* ─── Error ─── */
+    .err {
+      display: none;
+      background: #FFF0F0;
+      border: 2px solid #E74C3C;
+      border-radius: 12px;
+      padding: 18px 22px;
+      color: #C0392B;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-top: 20px;
+      line-height: 1.7;
+    }
+    .err.show { display: block; }
+
+    /* ─── Loading ─── */
+    .loading-wrap { display: none; text-align: center; padding: 56px 20px; animation: slideUp .38s ease both; }
+    .loading-wrap.show { display: block; }
+    .spinner {
+      width: 66px; height: 66px;
+      border: 5px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      margin: 0 auto 28px;
+      animation: spin .75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-txt { font-size: 1.25rem; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+    .loading-sub { font-size: 1rem; color: var(--muted); line-height: 1.8; }
+
+    /* ─── Important Notice ─── */
+    .important-notice {
+      background: #FFF9E6;
+      border: 2px solid #E07B00;
+      border-radius: 16px;
+      padding: 24px 24px;
+      margin-bottom: 22px;
+    }
+    .important-notice-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #7A4300;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .important-notice ul { padding-left: 0; list-style: none; }
+    .important-notice ul li {
+      padding: 6px 0;
+      font-size: 1rem;
+      color: #5A3300;
+      line-height: 1.8;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .important-notice ul li::before { content: '・'; flex-shrink: 0; font-weight: 700; }
+
+    /* ─── Consent Checkbox ─── */
+    .consent-wrap {
+      background: #FFF9E6;
+      border: 2px solid #E07B00;
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin-top: 20px;
+      margin-bottom: 4px;
+    }
+    .consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      cursor: pointer;
+      font-size: 1.05rem;
+      color: #1A1A1A;
+      line-height: 1.8;
+      user-select: none;
+    }
+    .consent-label input[type="checkbox"] {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      cursor: pointer;
+      accent-color: var(--primary);
+      margin-top: 3px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       Custom Report Sections
+       ═══════════════════════════════════════════════════════════ */
+
+    .report-wrap { display: none; }
+    .report-wrap.show { display: block; }
+
+    /* Section fade-in animation */
+    .rpt-section {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .5s ease, transform .5s ease;
+    }
+    .rpt-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Report Header ─── */
+    .rpt-header {
+      background: linear-gradient(135deg, #2E8B57, #4CAF82);
+      color: #FFFFFF;
+      padding: 24px;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 18px rgba(46,139,87,.35);
+    }
+    .rpt-header-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .rpt-header-sub {
+      font-size: 14px;
+      opacity: .95;
+      margin-top: 8px;
+    }
+
+    /* ─── Urgency Score ─── */
+    .urgency-card {
+      background: #FFFFFF;
+      border: 2px solid #2E8B57;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .urgency-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 14px;
+    }
+    .urgency-score {
+      font-size: 64px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .urgency-score-unit {
+      font-size: 22px;
+      font-weight: 700;
+      color: #888888;
+      margin-left: 4px;
+    }
+    .urgency-bar-track {
+      height: 16px;
+      background: #EEEEEE;
+      border-radius: 8px;
+      margin: 18px 0 16px;
+      overflow: hidden;
+    }
+    .urgency-bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 1s ease;
+    }
+    .urgency-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    /* ─── Summary ─── */
+    .summary-card {
+      background: #F8FBF9;
+      border-left: 4px solid #2E8B57;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .summary-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 12px;
+    }
+    .summary-text {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.9;
+    }
+
+    /* ─── Section title ─── */
+    .sec-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* ─── Risks ─── */
+    .risks-wrap { margin-bottom: 20px; }
+    .risk-card {
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      border-left: 4px solid;
+    }
+    .risk-card.high {
+      background: #FFF0F0;
+      border-color: #CC0000;
+    }
+    .risk-card.medium {
+      background: #FFF9E6;
+      border-color: #E07B00;
+    }
+    .risk-card.low {
+      background: #F8FBF9;
+      border-color: #2E8B57;
+    }
+    .risk-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .risk-card.high .risk-title { color: #CC0000; }
+    .risk-card.medium .risk-title { color: #E07B00; }
+    .risk-card.low .risk-title { color: #2E8B57; }
+    .risk-desc {
+      font-size: 15px;
+      color: #333333;
+      line-height: 1.8;
+    }
+
+    /* ─── Hidden fact box (inside risk card) ─── */
+    .hidden-fact {
+      background: #E8F5EE;
+      border-left: 3px solid #2E8B57;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 12px;
+    }
+    .hidden-fact-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 6px;
+    }
+    .hidden-fact-text {
+      font-size: 15px;
+      color: #333333;
+      line-height: 1.8;
+    }
+
+    /* ─── Cost reduction tip (inside solution card) ─── */
+    .cost-tip {
+      background: #E3F2FD;
+      border-left: 3px solid #0077B6;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      text-align: left;
+    }
+    .cost-tip-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0077B6;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    .cost-tip-text {
+      font-size: 15px;
+      color: #333333;
+      line-height: 1.8;
+      text-align: left;
+    }
+
+    /* ─── Expert negotiable badge ─── */
+    .negotiable-badge {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      color: #FFFFFF;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .negotiable-badge.yes     { background: #2E8B57; }
+    .negotiable-badge.partial { background: #2E8B57; }
+    .negotiable-badge.no      { background: #2E8B57; }
+
+    /* ─── Expert warning box ─── */
+    .expert-warning {
+      background: #FFF0F0;
+      border-left: 3px solid #CC0000;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 10px;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .expert-warning-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #CC0000;
+      margin-bottom: 4px;
+      text-align: left;
+    }
+    .expert-warning-text {
+      font-size: 14px;
+      color: #CC0000;
+      line-height: 1.8;
+      text-align: left;
+    }
+
+    /* ─── Deadline risk cell ─── */
+    .deadline-risk {
+      font-size: 14px;
+      color: #333333;
+      line-height: 1.8;
+    }
+
+    /* ─── Warning card (structured) ─── */
+    .warning-card {
+      background: #FFFBF5;
+      border-left: 4px solid #E07B00;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .warning-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #CC0000;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .warning-card-text {
+      font-size: 14px;
+      color: #333333;
+      line-height: 1.8;
+    }
+
+    /* ─── Soft CTA (inline book promo) ─── */
+    .soft-cta {
+      background: #F0F7FA;
+      border: 1px dashed #0077B6;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .soft-cta-text {
+      font-size: 14px;
+      color: #333333;
+      line-height: 1.7;
+    }
+    .soft-cta-btn {
+      display: inline-block;
+      background: #0077B6;
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+    }
+    .soft-cta-btn:hover { background: #005F8E; transform: translateY(-1px); }
+
+    /* ─── Solutions timeline ─── */
+    .timeline { margin-bottom: 20px; }
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .timeline-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 21px;
+      top: 50px;
+      bottom: -18px;
+      width: 2px;
+      background: #D4EDDA;
+    }
+    .timeline-num {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      background: #2E8B57;
+      color: #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      z-index: 1;
+      box-shadow: 0 2px 6px rgba(46,139,87,.3);
+    }
+    .timeline-content {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1px solid #EEEEEE;
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .timeline-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+    .timeline-desc {
+      font-size: 15px;
+      color: #333333;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+    .timeline-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tl-badge {
+      font-size: 14px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .tl-badge.time {
+      background: #E8F5EE;
+      color: #2E8B57;
+    }
+    .tl-badge.cost {
+      background: #E3F2FD;
+      color: #0077B6;
+    }
+
+    /* ─── Checklist ─── */
+    .checklist-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEEE;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .checklist-progress-wrap {
+      margin-bottom: 18px;
+    }
+    .checklist-progress-text {
+      font-size: 14px;
+      color: #555555;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .checklist-progress-track {
+      height: 8px;
+      background: #EEEEEE;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .checklist-progress-fill {
+      height: 100%;
+      background: #2E8B57;
+      border-radius: 4px;
+      transition: width .4s ease;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #FFFFFF;
+      border: 1px solid #DDDDDD;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all .2s;
+      user-select: none;
+    }
+    .check-item:hover { border-color: #2E8B57; }
+    .check-item.checked {
+      background: #E8F5EE;
+      border-color: #2E8B57;
+    }
+    .check-item.checked .check-item-task {
+      text-decoration: line-through;
+      color: #888888;
+    }
+    .check-box {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      border: 2px solid #CCCCCC;
+      border-radius: 6px;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+    .check-item.checked .check-box {
+      background: #2E8B57;
+      border-color: #2E8B57;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .check-item-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .check-item-task {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .check-item-deadline {
+      font-size: 14px;
+      color: #888888;
+      margin-top: 4px;
+    }
+    .check-priority {
+      font-size: 15px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: #FFFFFF;
+      white-space: nowrap;
+      min-width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .check-priority.high   { background: #CC0000; }
+    .check-priority.medium {
+      background: #0077B6;
+      color: #FFFFFF;
+      font-size: 13px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .check-priority.low    { background: #888888; }
+
+    /* ─── Expert costs ─── */
+    .expert-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      width: 100%;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .expert-cost-card {
+      background: #FFFFFF;
+      border: 1px solid #EEEEEE;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    .expert-cost-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      text-align: left;
+    }
+    .expert-cost-amount {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0077B6;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+    .expert-cost-reason {
+      font-size: 15px;
+      color: #333333;
+      line-height: 1.8;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    /* ─── Deadlines table ─── */
+    .deadline-wrap {
+      margin-bottom: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .deadline-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .deadline-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #FFFFFF;
+      font-size: 14px;
+    }
+    .deadline-table th,
+    .deadline-table td {
+      padding: 10px 8px;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      font-size: 14px;
+      color: #1A1A1A;
+      vertical-align: middle;
+      border: 1px solid #EEEEEE;
+    }
+    .deadline-table thead th {
+      background: #2E8B57;
+      color: #FFFFFF;
+      font-weight: 700;
+      text-align: center;
+      font-size: 14px;
+      border: 1px solid #2E8B57;
+    }
+    .deadline-table tbody td {
+      color: var(--text);
+    }
+    .deadline-table th:nth-child(1),
+    .deadline-table td:nth-child(1) { width: 26%; white-space: normal; word-break: break-word; overflow-wrap: break-word; font-size: 13px; line-height: 1.5; padding: 8px 6px; }
+    .deadline-table th:nth-child(2),
+    .deadline-table td:nth-child(2) { width: 26%; word-break: break-word; }
+    .deadline-table th:nth-child(3),
+    .deadline-table td:nth-child(3) { width: 12%; text-align: center; vertical-align: middle; }
+    .deadline-table th:nth-child(4),
+    .deadline-table td:nth-child(4) { width: 38%; }
+    .deadline-table tbody tr:nth-child(odd) td { background: #FFFFFF; }
+    .deadline-table tbody tr:nth-child(even) td { background: #F8FBF9; }
+    .deadline-badge {
+      display: inline-block;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      padding: 6px 12px;
+      min-width: 44px;
+      white-space: normal;
+      word-break: break-word;
+      max-width: 100%;
+    }
+    .deadline-badge.high   { background: #CC0000; }
+    .deadline-badge.medium { background: #E07B00; }
+    .deadline-badge.low    { background: #888888; }
+    .deadline-badge.period-badge {
+      background: #0077B6;
+      color: #FFFFFF;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      display: inline-block;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* ─── Warnings ─── */
+    .warn-box {
+      background: #FFF9E6;
+      border-left: 4px solid #E07B00;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      color: #7A4300;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* ─── Emergency banner ─── */
+    .emergency-banner {
+      background: #FFFFFF;
+      border: 2px solid #2E8B57;
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 8px 32px rgba(46,139,87,0.10);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      margin: 24px 0;
+    }
+    .emergency-banner::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: linear-gradient(180deg, #2E8B57, #4CAF82);
+      border-radius: 16px 0 0 16px;
+    }
+    .emergency-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+    .emergency-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 8px;
+      line-height: 1.5;
+      letter-spacing: 0.5px;
+    }
+    .emergency-subtitle {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 20px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .emergency-text {
+      font-size: 17px;
+      color: #1A1A1A;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+      line-height: 1.8;
+    }
+    .emergency-divider {
+      border-top: 1px solid #E8F5EE;
+      margin: 16px 0;
+    }
+    .emergency-point {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #F0F0F0;
+      text-align: left;
+    }
+    .emergency-point-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      line-height: 1;
+    }
+    .emergency-point-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333333;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+    }
+    .emergency-closing {
+      font-size: 18px;
+      color: #CC0000;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 20px;
+      padding: 16px;
+      background: #FFF8F8;
+      border-radius: 8px;
+      border: 1px solid #FFCCCC;
+    }
+
+    /* ─── Final CTAs ─── */
+    .final-cta-wrap { margin-bottom: 22px; }
+    .btn-purchase-main {
+      display: block;
+      width: 100%;
+      background: #0077B6;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 16px;
+      min-height: 66px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 18px 24px;
+      margin-bottom: 14px;
+      transition: all .2s;
+      box-shadow: 0 4px 13px rgba(0,119,182,.35);
+    }
+    .btn-purchase-main:hover { background: #005F8E; transform: translateY(-1px); }
+    .btn-purchase-main:focus-visible { outline: 3px solid #0077B6; outline-offset: 3px; }
+
+    .btn-line-main {
+      display: block;
+      width: 100%;
+      background: #06C755;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 16px;
+      min-height: 66px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 18px 24px;
+      transition: all .2s;
+      box-shadow: 0 4px 13px rgba(6,199,85,.35);
+    }
+    .btn-line-main:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-line-main:focus-visible { outline: 3px solid #06C755; outline-offset: 3px; }
+
+    /* ─── Trust badge ─── */
+    .trust-badge {
+      background: #F8FBF9;
+      border: 1px solid #2E8B57;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      font-size: 14px;
+      color: #666666;
+      line-height: 1.9;
+      margin-bottom: 20px;
+    }
+    .trust-badge div { padding: 4px 0; text-align: left; display: block; }
+
+    /* ─── Restart ─── */
+    .restart-btn {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid var(--border);
+      color: var(--muted);
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all .2s;
+      font-family: inherit;
+      min-height: 66px;
+    }
+    .restart-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ─── Error in report ─── */
+    .report-error {
+      background: #FFF0F0;
+      border: 2px solid #E74C3C;
+      border-radius: 12px;
+      padding: 20px;
+      color: #C0392B;
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      text-align: center;
+      white-space: pre-line;
+    }
+    .report-error strong { display: block; margin-bottom: 8px; font-size: 16px; }
+
+    /* ─── Footer Disclaimer ─── */
+    .footer-disclaimer {
+      background: #F5F5F5;
+      padding: 30px 20px;
+      margin-top: 0;
+    }
+    .footer-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      font-size: 15px;
+      color: #555555;
+      line-height: 1.9;
+    }
+    .footer-disclaimer-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #333333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #CCCCCC;
+    }
+    .footer-section { margin-bottom: 18px; }
+    .footer-section-title { font-weight: 700; color: #444444; margin-bottom: 6px; }
+    .footer-section ul { padding-left: 0; list-style: none; }
+    .footer-section ul li {
+      padding: 2px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .footer-section ul li::before { content: '・'; flex-shrink: 0; }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .radio-grid { grid-template-columns: 1fr 1fr; }
+      .radio-grid.two { grid-template-columns: 1fr 1fr; }
+      .card,
+      .expert-cost-card,
+      .trust-badge,
+      .warning-card,
+      .checklist-card { padding: 16px 12px; }
+      .expert-warning { padding: 12px 12px; }
+      .nav-btns { flex-wrap: wrap; }
+      .btn-back { min-width: auto; }
+      .expert-grid { grid-template-columns: 1fr; }
+      .urgency-score { font-size: 56px; }
+      .rpt-header-title { font-size: 20px; }
+      .emergency-title { font-size: 18px; }
+      .btn-purchase-main, .btn-line-main { font-size: 18px; }
+
+      /* font-size を 1px 小さく（最小 14px） */
+      .expert-cost-name { font-size: 16px; }
+      .expert-cost-amount { font-size: 15px; }
+      .expert-cost-reason { font-size: 14px; }
+      .hidden-fact-text { font-size: 14px; }
+      .cost-tip-text { font-size: 14px; }
+
+      /* テーブルは横スクロール可 */
+      .deadline-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .deadline-table { font-size: 13px; }
+      .deadline-table th,
+      .deadline-table td { font-size: 13px; padding: 10px 8px; }
+    }
+
+    /* ─── Locked Section ─── */
+    .locked-section-wrapper {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .locked-section {
+      position: relative;
+      overflow: hidden;
+      max-height: 400px;
+    }
+    .locked-section .locked-content {
+      filter: blur(4px);
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.7;
+    }
+    .locked-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 16px;
+      overflow-y: auto;
+      padding: 24px 20px;
+      min-height: 300px;
+      height: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      z-index: 10;
+    }
+    .locked-overlay-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    .locked-overlay-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 8px;
+    }
+    .locked-overlay-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0077B6;
+      line-height: 1.8;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <img src="header.svg" alt="つぐみる" class="header-image" loading="eager" decoding="sync">
+</div>
+
+<div class="container">
+
+  <!-- Important Notice -->
+  <div class="important-notice">
+    <div class="important-notice-title">⚠️ 重要なお知らせ</div>
+    <ul>
+      <li>本サービスは相続に関する一般的な情報提供を目的としたものであり、<br>法律・税務・不動産に関する専門的なアドバイスではありません。</li>
+      <li>診断結果はAIが生成した参考情報です。正確性・完全性を保証するものではありません。</li>
+      <li>具体的な手続きや判断については、必ず資格を持つ専門家にご相談ください。</li>
+    </ul>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap" style="display:none;">
+    <div class="step-labels">
+      <span class="step-label" id="lbl1">Step1<br>基本情報</span>
+      <span class="step-label" id="lbl2">Step2<br>財産の種類</span>
+      <span class="step-label" id="lbl3">Step3<br>財産規模</span>
+      <span class="step-label" id="lbl4">Step4<br>懸念事項</span>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="barFill" style="width:25%"></div>
+    </div>
+    <div class="dots">
+      <div class="dot" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+      <div class="dot" id="dot3"></div>
+      <div class="dot" id="dot4"></div>
+    </div>
+  </div>
+
+  <!-- ── STEP 1 ── -->
+  <div class="card step-card" id="step1">
+    <div class="step-title"><span class="step-badge">Step 1</span>基本情報を教えてください</div>
+    <p class="step-desc">あなたの状況を把握するための基本的な情報です。</p>
+
+    <div class="q-group">
+      <div class="q-label">被相続人との関係 <span class="req">必須</span></div>
+      <div class="radio-grid two">
+        <div class="r-item"><input type="radio" name="rel" id="r-spouse" value="配偶者"><label class="r-label" for="r-spouse">配偶者</label></div>
+        <div class="r-item"><input type="radio" name="rel" id="r-child"  value="子">    <label class="r-label" for="r-child">子</label></div>
+        <div class="r-item"><input type="radio" name="rel" id="r-parent" value="親">    <label class="r-label" for="r-parent">親</label></div>
+        <div class="r-item"><input type="radio" name="rel" id="r-sib"    value="兄弟姉妹"><label class="r-label" for="r-sib">兄弟姉妹</label></div>
+        <div class="r-item"><input type="radio" name="rel" id="r-other"  value="その他"><label class="r-label" for="r-other">その他</label></div>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">相続人の人数 <span class="req">必須</span></div>
+      <div class="radio-grid two">
+        <div class="r-item"><input type="radio" name="heirN" id="h1" value="1人">    <label class="r-label" for="h1">1人</label></div>
+        <div class="r-item"><input type="radio" name="heirN" id="h2" value="2〜3人">  <label class="r-label" for="h2">2〜3人</label></div>
+        <div class="r-item"><input type="radio" name="heirN" id="h3" value="4〜5人">  <label class="r-label" for="h3">4〜5人</label></div>
+        <div class="r-item"><input type="radio" name="heirN" id="h4" value="6人以上"> <label class="r-label" for="h4">6人以上</label></div>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">遺言書の有無 <span class="req">必須</span></div>
+      <div class="radio-grid">
+        <div class="r-item"><input type="radio" name="will" id="w-yes" value="ある">      <label class="r-label" for="w-yes">ある</label></div>
+        <div class="r-item"><input type="radio" name="will" id="w-no"  value="ない">      <label class="r-label" for="w-no">ない</label></div>
+        <div class="r-item"><input type="radio" name="will" id="w-unk" value="わからない"> <label class="r-label" for="w-unk">わからない</label></div>
+      </div>
+    </div>
+
+    <div class="q-group">
+      <div class="q-label">現在の状況 <span class="req">必須</span></div>
+      <div class="radio-grid two">
+        <div class="r-item"><input type="radio" name="situation" id="s-before" value="相続発生前"><label class="r-label" for="s-before">相続発生前</label></div>
+        <div class="r-item"><input type="radio" name="situation" id="s-after"  value="相続発生後"><label class="r-label" for="s-after">相続発生後</label></div>
+      </div>
+    </div>
+
+    <div class="err" id="err1">すべての項目を選択してください。</div>
+    <div class="nav-btns">
+      <button class="btn btn-primary" onclick="goNext(1)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2 ── -->
+  <div class="card step-card" id="step2">
+    <div class="step-title"><span class="step-badge">Step 2</span>財産の種類を選んでください</div>
+    <p class="step-desc">該当するものをすべて選択してください（複数選択可）</p>
+
+    <div class="chk-list">
+      <div class="chk-item"><input type="checkbox" id="a-real"   value="不動産（土地・建物）"><label class="chk-label" for="a-real">🏠 不動産（土地・建物）</label></div>
+      <div class="chk-item"><input type="checkbox" id="a-cash"   value="現金・預貯金">        <label class="chk-label" for="a-cash">💰 現金・預貯金</label></div>
+      <div class="chk-item"><input type="checkbox" id="a-stock"  value="株式・投資信託">      <label class="chk-label" for="a-stock">📈 株式・投資信託</label></div>
+      <div class="chk-item"><input type="checkbox" id="a-ins"    value="生命保険">            <label class="chk-label" for="a-ins">🛡️ 生命保険</label></div>
+      <div class="chk-item"><input type="checkbox" id="a-biz"    value="事業・会社の株">      <label class="chk-label" for="a-biz">🏢 事業・会社の株</label></div>
+      <div class="chk-item"><input type="checkbox" id="a-debt"   value="借金・負債">          <label class="chk-label" for="a-debt">📋 借金・負債</label></div>
+      <div class="chk-item"><input type="checkbox" id="a-other"  value="その他">              <label class="chk-label" for="a-other">📦 その他</label></div>
+    </div>
+
+    <div class="err" id="err2">少なくとも1つ選択してください。</div>
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="goPrev(2)">← 戻る</button>
+      <button class="btn btn-primary" onclick="goNext(2)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3 ── -->
+  <div class="card step-card" id="step3">
+    <div class="step-title"><span class="step-badge">Step 3</span>財産の規模はどのくらいですか？</div>
+    <p class="step-desc">おおよその総額をお選びください。</p>
+
+    <div class="q-group">
+      <div class="radio-grid">
+        <div class="r-item"><input type="radio" name="scale" id="sc1" value="3,000万円未満">     <label class="r-label" for="sc1">3,000万円未満</label></div>
+        <div class="r-item"><input type="radio" name="scale" id="sc2" value="3,000〜5,000万円">  <label class="r-label" for="sc2">3,000〜5,000万円</label></div>
+        <div class="r-item"><input type="radio" name="scale" id="sc3" value="5,000万円〜1億円">  <label class="r-label" for="sc3">5,000万円〜1億円</label></div>
+        <div class="r-item"><input type="radio" name="scale" id="sc4" value="1億〜3億円">        <label class="r-label" for="sc4">1億〜3億円</label></div>
+        <div class="r-item"><input type="radio" name="scale" id="sc5" value="3億円以上">         <label class="r-label" for="sc5">3億円以上</label></div>
+        <div class="r-item"><input type="radio" name="scale" id="sc6" value="わからない">         <label class="r-label" for="sc6">わからない</label></div>
+      </div>
+    </div>
+
+    <div class="err" id="err3">財産規模を選択してください。</div>
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="goPrev(3)">← 戻る</button>
+      <button class="btn btn-primary" onclick="goNext(3)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4 ── -->
+  <div class="card step-card" id="step4">
+    <div class="step-title"><span class="step-badge">Step 4</span>懸念していることはありますか？</div>
+    <p class="step-desc">該当するものをすべて選択してください（複数選択可）</p>
+
+    <div class="chk-list">
+      <div class="chk-item"><input type="checkbox" id="c-dispute"    value="相続人同士で揉めそう">              <label class="chk-label" for="c-dispute">⚠️ 相続人同士で揉めそう</label></div>
+      <div class="chk-item"><input type="checkbox" id="c-realestate" value="不動産をどう分けるかわからない">    <label class="chk-label" for="c-realestate">🏠 不動産をどう分けるかわからない</label></div>
+      <div class="chk-item"><input type="checkbox" id="c-tax"        value="相続税がかかるか不安">              <label class="chk-label" for="c-tax">💸 相続税がかかるか不安</label></div>
+      <div class="chk-item"><input type="checkbox" id="c-succession" value="事業を誰かに継がせたい">            <label class="chk-label" for="c-succession">🏢 事業を誰かに継がせたい</label></div>
+      <div class="chk-item"><input type="checkbox" id="c-quick"      value="早く手続きを終わらせたい">          <label class="chk-label" for="c-quick">⏱️ 早く手続きを終わらせたい</label></div>
+      <div class="chk-item"><input type="checkbox" id="c-start"      value="何から始めればいいかわからない">    <label class="chk-label" for="c-start">❓ 何から始めればいいかわからない</label></div>
+    </div>
+
+    <div class="err" id="err4">少なくとも1つ選択してください。</div>
+    <div class="consent-wrap">
+      <label class="consent-label">
+        <input type="checkbox" id="consentCheck">
+        <span>上記の免責事項を確認し、本サービスが専門的な法律・税務・不動産アドバイスではないことを理解しました。</span>
+      </label>
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="goPrev(4)">← 戻る</button>
+      <button class="btn btn-diagnose" id="diagnoseBtn" onclick="runDiagnosis()" disabled>✨ 診断する</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-wrap" id="loadingWrap">
+    <div class="card" style="padding:52px 20px; text-align:center;">
+      <div class="spinner"></div>
+      <div class="loading-txt">あなただけのカスタムレポートを作成中...</div>
+      <div class="loading-sub">あなたの状況に合わせたレポートを生成しています。<br>しばらくお待ちください。</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Custom Report (rendered from JSON)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="report-wrap" id="reportWrap">
+    <div id="reportBody"></div>
+    <button class="restart-btn" onclick="restart()" style="margin-top:8px;">🔄 もう一度診断する</button>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Footer Disclaimer -->
+<footer class="footer-disclaimer">
+  <div class="footer-inner">
+    <div class="footer-disclaimer-title">免責事項</div>
+    <div class="footer-section">
+      <div class="footer-section-title">1. 本サービスについて</div>
+      <p>本サービス「つぐみる」は、相続に関する一般的な情報提供を目的としたものです。法律相談・税務相談・不動産査定・投資助言には該当しません。</p>
+    </div>
+    <div class="footer-section">
+      <div class="footer-section-title">2. 専門家への相談について</div>
+      <p>本サービスの診断結果は参考情報です。具体的な手続きについては必ず以下の資格を持つ専門家にご相談ください。</p>
+      <ul>
+        <li>法律に関すること → 弁護士</li>
+        <li>税務に関すること → 税理士</li>
+        <li>登記に関すること → 司法書士</li>
+        <li>不動産に関すること → 宅地建物取引士</li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <div class="footer-section-title">3. 情報の正確性について</div>
+      <p>本サービスの情報はAIが生成したものであり、正確性・完全性を保証するものではありません。最新の法令・税制については必ず専門家にご確認ください。</p>
+    </div>
+    <div class="footer-section">
+      <div class="footer-section-title">4. 損害賠償について</div>
+      <p>本サービスの利用により生じた損害について、当社は一切の責任を負いません。</p>
+    </div>
+    <div class="footer-section">
+      <div class="footer-section-title">5. 個人情報について</div>
+      <p>本サービスに入力された情報は診断目的のみに使用し、第三者への提供は行いません。</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+var NOTE_PURCHASE_URL = 'https://note.com/colto_official';
+var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
+
+(function () {
+  'use strict';
+
+  /* ───── Config ───── */
+  // APIキーはサーバーサイドで設定してください
+  var API_KEY = '';
+  var SYSTEM_PROMPT = '絶対にコードフェンス（```json や ```）を使わないこと。{ で始まり } で終わるJSONのみを返答すること。\n\n' +
+    'あなたは相続業界で20年以上の経験を持つ専門家です。税理士・弁護士・司法書士・不動産鑑定士と連携し、数百件の相続案件を手がけてきました。\n\n' +
+    'あなたの役割は、ユーザーの相続診断結果をもとに「知らないと損をする」本音の情報を提供することです。\n\n' +
+    '以下を必ず守ってください。\n\n' +
+    '【絶対に守るルール】\n' +
+    '・一般論は書かない。入力された情報に完全特化した内容のみ書く\n' +
+    '・「専門家に相談してください」で終わらせない。相談する前に知っておくべき具体的な情報を必ず入れる\n' +
+    '・業界の裏側・専門家が教えてくれない情報を必ず1つ以上入れる\n' +
+    '・「このまま何もしないと○○万円損する」という具体的なリスクを数字で示す\n' +
+    '・「専門家費用を削減できる具体的な方法」を必ず入れる\n' +
+    '・読者が「知らなかった・やばい」と感じる情報を必ず入れる\n' +
+    '・読者が「早く行動しなければ」と感じる期限の緊迫感を演出する\n' +
+    '・税額の断言はしない・法的判断はしない\n' +
+    '・必ずJSON形式のみで返答する。JSON以外のテキストは一切含めない\n\n' +
+    '必ずJSON形式のみで返答すること。\n' +
+    'マークダウンのコードフェンス（```）は使わない。\n' +
+    '{ で始まり } で終わるJSONのみを返答すること。\n' +
+    'それ以外のテキストは一切含めないこと。';
+
+  var step = 0;
+
+  /* ───── Helpers ───── */
+  function q(sel)  { return document.querySelector(sel); }
+  function qa(sel) { return Array.from(document.querySelectorAll(sel)); }
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function addLineBreaks(text) {
+    if (!text) return '';
+    return text
+      .replace(/また/g, '<br>また')
+      .replace(/ただし/g, '<br>ただし')
+      .replace(/配偶者控除/g, '<br>配偶者控除')
+      .replace(/配偶者以外/g, '<br>配偶者以外')
+      .replace(/鑑定書を添付/g, '<br>鑑定書を添付')
+      .replace(/大幅な値引き/g, '<br>大幅な値引き')
+      .replace(/法定相続人を/g, '<br>法定相続人を')
+      .replace(/弁護士の見立て/g, '<br>弁護士の見立て')
+      .replace(/減額交渉が可能/g, '<br>減額交渉が可能')
+      .replace(/相談のみなら/g, '<br>相談のみなら')
+      .replace(/違反すると10万円/g, '<br>違反すると10万円')
+      .replace(/パック料金を提示/g, '<br>パック料金を提示')
+      .replace(/複数の税理士から見積もり/g, '<br>複数の税理士から見積もり')
+      .replace(/登記申請のみなら/g, '<br>登記申請のみなら')
+      .replace(/初回相談無料の事務所/g, '<br>初回相談無料の事務所')
+      .replace(/文案を一緒に/g, '<br>文案を一緒に')
+      .replace(/財産一覧を自分で/g, '<br>財産一覧を自分で')
+      .replace(/複数の不動産をまとめて/g, '<br>複数の不動産をまとめて')
+      .replace(/必ず3件以上の見積もり/g, '<br>必ず3件以上の見積もり');
+  }
+  function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  /* ───── Step UI ───── */
+  function hideAll() {
+    [1,2,3,4].forEach(function(n){ document.getElementById('step'+n).classList.remove('active'); });
+    document.getElementById('loadingWrap').classList.remove('show');
+    document.getElementById('reportWrap').classList.remove('show');
+  }
+
+  function showStep(n) {
+    hideAll();
+    document.getElementById('progressWrap').style.display = 'block';
+    document.getElementById('step'+n).classList.add('active');
+    updateProgress(n);
+    step = n;
+    scrollTop();
+  }
+
+  function updateProgress(n) {
+    var pct = [25,50,75,100];
+    document.getElementById('barFill').style.width = pct[n-1] + '%';
+    [1,2,3,4].forEach(function(i){
+      var dot = document.getElementById('dot'+i);
+      var lbl = document.getElementById('lbl'+i);
+      dot.className = 'dot' + (i < n ? ' done' : i === n ? ' active' : '');
+      lbl.className = 'step-label' + (i < n ? ' done' : i === n ? ' active' : '');
+    });
+  }
+
+  /* ───── Validation ───── */
+  function validate(n) {
+    var ok = true;
+    if (n === 1) {
+      ok = !!(q('input[name="rel"]:checked') && q('input[name="heirN"]:checked') &&
+              q('input[name="will"]:checked') && q('input[name="situation"]:checked'));
+    } else if (n === 2) {
+      ok = document.querySelectorAll('#step2 input[type="checkbox"]:checked').length > 0;
+    } else if (n === 3) {
+      ok = !!q('input[name="scale"]:checked');
+    } else if (n === 4) {
+      ok = document.querySelectorAll('#step4 input[type="checkbox"]:checked').length > 0;
+    }
+    var el = document.getElementById('err'+n);
+    if (ok) el.classList.remove('show'); else el.classList.add('show');
+    return ok;
+  }
+
+  window.goNext = function(n) { if (!validate(n)) return; showStep(n + 1); };
+  window.goPrev = function(n) { showStep(n - 1); };
+
+  /* ───── Gather answers ───── */
+  function getAnswers() {
+    return {
+      relation: (q('input[name="rel"]:checked')      || {}).value || '',
+      heirs:    (q('input[name="heirN"]:checked')    || {}).value || '',
+      will:     (q('input[name="will"]:checked')     || {}).value || '',
+      status:   (q('input[name="situation"]:checked')|| {}).value || '',
+      assets:   qa('#step2 input[type="checkbox"]:checked').map(function(el){ return el.value; }),
+      amount:   (q('input[name="scale"]:checked')    || {}).value || '',
+      concerns: qa('#step4 input[type="checkbox"]:checked').map(function(el){ return el.value; })
+    };
+  }
+
+  /* ───── Prompt builder (JSON) ───── */
+  function buildUserPrompt(a) {
+    return '以下の相続診断結果をもとに、この方だけのカスタム相続レポートをJSON形式で作成してください。\n\n' +
+      '診断内容：\n' +
+      '被相続人との関係：' + a.relation + '\n' +
+      '相続人の人数：' + a.heirs + '\n' +
+      '遺言書の有無：' + a.will + '\n' +
+      '現在の状況：' + a.status + '\n' +
+      '財産の種類：' + a.assets.join('、') + '\n' +
+      '財産規模：' + a.amount + '\n' +
+      '懸念事項：' + a.concerns.join('、') + '\n\n' +
+      '以下の点を必ず守ってください。\n\n' +
+      '1. summaryは以下の構成にする\n' +
+      '・最初の1文：「あなたのケースは○○という状況です」と診断内容を具体的に言語化する\n' +
+      '・2文目：「最も注意すべきことは○○です」と核心を突く\n' +
+      '・3文目：「今すぐ行動しないと○○のリスクがあります」と緊迫感を作る\n' +
+      '・一般論は一切書かない\n\n' +
+      '2. risksは以下の内容を必ず含める\n' +
+      '・専門家が教えてくれない業界の裏側の情報を1つ以上含める\n' +
+      '・「知らないと○○万円損する」という具体的な数字を含める\n' +
+      '・「○○%の人がやってしまう失敗」という形式で書く\n' +
+      '・入力された財産の種類・規模・懸念事項に完全特化した内容にする\n\n' +
+      '3. solutionsは以下の内容を必ず含める\n' +
+      '・「専門家に相談する前にこれをやると費用が○%削減できる」という具体的な方法\n' +
+      '・「○○という専門家は避けた方がいい・△△という専門家を選ぶべき理由」\n' +
+      '・明日から実践できる具体的なアクション\n' +
+      '・各解決策に具体的な期間と費用の目安を必ず入れる\n\n' +
+      '4. checklistは以下の内容にする\n' +
+      '・「今日中にやること」「今週中にやること」「今月中にやること」の3段階で分類する\n' +
+      '・各タスクに「なぜこれが重要か」を一言添える\n' +
+      '・チェックリストを全部実行すると何が解決するかを明確にする\n\n' +
+      '5. expert_costsは以下の内容にする\n' +
+      '・各専門家の費用の適正価格と相場を具体的に示す\n' +
+      '・「この費用は値引き交渉できる・できない」を明記する\n' +
+      '・「この専門家に頼むと損をするケース」を正直に書く\n\n' +
+      '6. deadlinesは以下の内容にする\n' +
+      '・期限を過ぎた場合の具体的なリスクと金額的損失を明記する\n' +
+      '・「この期限だけは絶対に守らないといけない理由」を書く\n\n' +
+      '7. warningsは以下の内容にする\n' +
+      '・「○○業者が使う常套句と見分け方」\n' +
+      '・「相続でよくある詐欺・トラブルの手口」\n' +
+      '・「やってしまいがちな取り返しのつかないミス」\n' +
+      'を入力された状況に特化して書く\n\n' +
+      '以下のJSON形式のみで返答する。JSON以外のテキストは一切含めない。\n\n' +
+      '{\n' +
+      '  "summary": "総評テキスト（診断内容に完全特化・一般論なし・200文字程度）",\n' +
+      '  "urgency_score": 0から100の数値,\n' +
+      '  "urgency_label": "緊急度のラベル",\n' +
+      '  "risks": [\n' +
+      '    {\n' +
+      '      "title": "リスクのタイトル（具体的な数字を含める）",\n' +
+      '      "description": "詳細説明（業界の裏側・知らないと損する情報を含める）",\n' +
+      '      "urgency": "high または medium または low",\n' +
+      '      "hidden_fact": "専門家が教えてくれない業界の裏側の情報"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "solutions": [\n' +
+      '    {\n' +
+      '      "priority": 1,\n' +
+      '      "title": "解決策のタイトル",\n' +
+      '      "description": "詳細説明（明日から実践できる具体的な内容）",\n' +
+      '      "timeframe": "期間",\n' +
+      '      "cost": "費用目安",\n' +
+      '      "cost_reduction_tip": "費用を削減できる具体的な方法"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "checklist": [\n' +
+      '    {\n' +
+      '      "task": "やること",\n' +
+      '      "deadline": "今日中・今週中・今月中のいずれか",\n' +
+      '      "priority": "high または medium または low",\n' +
+      '      "reason": "なぜこれが重要か（一言）"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "expert_costs": [\n' +
+      '    {\n' +
+      '      "expert": "専門家の種類",\n' +
+      '      "cost": "費用目安",\n' +
+      '      "reason": "必要な理由",\n' +
+      '      "negotiable": "値引き交渉できる・できない",\n' +
+      '      "warning": "この専門家に頼むと損をするケース"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "deadlines": [\n' +
+      '    {\n' +
+      '      "period": "期限",\n' +
+      '      "task": "手続き内容",\n' +
+      '      "importance": "high または medium または low",\n' +
+      '      "risk_if_missed": "期限を過ぎた場合の具体的なリスク"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "warnings": [\n' +
+      '    {\n' +
+      '      "title": "注意事項のタイトル",\n' +
+      '      "description": "具体的な内容（業者の手口・詐欺・ミスの事例）"\n' +
+      '    }\n' +
+      '  ]\n' +
+      '}';
+  }
+
+  /* ───── API call ───── */
+  window.runDiagnosis = function() {
+    if (!validate(4)) return;
+
+    var answers = getAnswers();
+
+    hideAll();
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('loadingWrap').classList.add('show');
+    scrollTop();
+
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 16000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: buildUserPrompt(answers) }]
+      })
+    })
+    .then(function(res){
+      if (!res.ok) {
+        return res.json().then(function(e){
+          throw new Error((e.error && e.error.message) || ('APIエラー: ' + res.status));
+        });
+      }
+      return res.json();
+    })
+    .then(function(data){
+      var responseText = data.content[0].text;
+      console.log('API Raw Response:', responseText);
+
+      // Step1: コードフェンスを全て除去
+      var cleaned = responseText;
+      cleaned = cleaned.replace(/```json/gi, '');
+      cleaned = cleaned.replace(/```/gi, '');
+      cleaned = cleaned.trim();
+
+      // Step2: {から}までを抽出
+      var firstBrace = cleaned.indexOf('{');
+      var lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+          cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+      }
+
+      // Step3: パース
+      var reportData = null;
+      try {
+          reportData = JSON.parse(cleaned);
+      } catch(e) {
+          console.error('Parse error:', e);
+          console.error('API Raw Response (full):', responseText);
+          console.error('Cleaned text:', cleaned);
+          renderError('レポートの解析に失敗しました。\nデバッグ情報をコンソールで確認してください。（F12を押してConsoleタブを開く）');
+          return;
+      }
+
+      if (!reportData) {
+          console.error('API Raw Response (full):', responseText);
+          renderError('レポートの解析に失敗しました。\nデバッグ情報をコンソールで確認してください。（F12を押してConsoleタブを開く）');
+          return;
+      }
+
+      renderReport(reportData);
+    })
+    .catch(function(err){
+      console.error('[tsugumiru] API error:', err);
+      renderError('', err && err.message ? err.message : '');
+    });
+  };
+
+  /* ───── Robust JSON parser ───── */
+  function tryParseJson(raw) {
+    if (!raw) return null;
+    var text = String(raw).trim();
+
+    // コードフェンスを除去
+    text = text.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '');
+    text = text.replace(/^```\s*/i, '').replace(/\s*```\s*$/i, '');
+    text = text.trim();
+
+    // 1. そのままパース
+    try { return JSON.parse(text); } catch(e1) {}
+
+    // 2. {から}を抽出してパース
+    var m = text.match(/\{[\s\S]*\}/);
+    if (m) {
+        try { return JSON.parse(m[0]); } catch(e2) {}
+    }
+
+    return null;
+  }
+
+  /* ───── Color helpers ───── */
+  function urgencyColor(score) {
+    var s = parseInt(score, 10) || 0;
+    if (s >= 80) return '#CC0000';
+    if (s >= 60) return '#E07B00';
+    if (s >= 40) return '#F5A623';
+    return '#2E8B57';
+  }
+  function urgencyBadgeColor(label) {
+    var l = String(label || '');
+    if (/今すぐ|至急|緊急/.test(l)) return '#CC0000';
+    if (/準備|始め/.test(l)) return '#E07B00';
+    if (/余裕|落ち着/.test(l)) return '#2E8B57';
+    return '#0077B6';
+  }
+  function normalizeLevel(v) {
+    var s = String(v || '').toLowerCase();
+    if (s.indexOf('high') >= 0 || s.indexOf('高') >= 0) return 'high';
+    if (s.indexOf('low')  >= 0 || s.indexOf('低') >= 0) return 'low';
+    return 'medium';
+  }
+  function priorityLabel(p) {
+    if (p === 'high')   return '急ぎ';
+    if (p === 'medium') return '今月中';
+    return '余裕あり';
+  }
+
+  /* ───── Renderers ───── */
+  function renderError(msg) {
+    document.getElementById('loadingWrap').classList.remove('show');
+    var html = '<div class="report-error"><strong>⚠️ エラーが発生しました</strong>' + esc(msg) + '</div>';
+    document.getElementById('reportBody').innerHTML = html;
+    document.getElementById('reportWrap').classList.add('show');
+    scrollTop();
+  }
+
+  function renderReport(r) {
+    var html = '';
+    var idx = 0;
+
+    // 1) Header banner
+    html += '<div class="rpt-section" data-i="' + (idx++) + '">';
+    html += '<div class="rpt-header">';
+    html += '<div class="rpt-header-title">あなただけの相続カスタムレポート</div>';
+    html += '<div class="rpt-header-sub">あなたの状況に合わせた専用レポートです</div>';
+    html += '</div></div>';
+
+
+    // 2) Urgency score
+    var score = Math.max(0, Math.min(100, parseInt(r.urgency_score, 10) || 0));
+    var sCol = urgencyColor(score);
+    var bCol = urgencyBadgeColor(r.urgency_label);
+    html += '<div class="rpt-section" data-i="' + (idx++) + '">';
+    html += '<div class="urgency-card">';
+    html += '<div class="urgency-title">あなたの相続緊急度</div>';
+    html += '<div class="urgency-score" style="color:' + sCol + ';">' + score + '<span class="urgency-score-unit">/100</span></div>';
+    html += '<div class="urgency-bar-track"><div class="urgency-bar-fill" style="width:' + score + '%; background:' + sCol + ';"></div></div>';
+    if (r.urgency_label) {
+      html += '<span class="urgency-badge" style="background:' + bCol + ';">' + esc(r.urgency_label) + '</span>';
+    }
+    html += '</div></div>';
+
+    // 3) Summary
+    if (r.summary) {
+      html += '<div class="rpt-section" data-i="' + (idx++) + '">';
+      html += '<div class="summary-card">';
+      html += '<div class="summary-title">📋 あなたの相続の総評</div>';
+      html += '<div class="summary-text">' + esc(r.summary) + '</div>';
+      html += '</div></div>';
+    }
+
+    // ── Locked sections (4–12) ──
+    var lockedHtml = '';
+
+    // 4) Risks - first 2 free, rest locked
+    if (Array.isArray(r.risks) && r.risks.length) {
+      var freeRisks   = r.risks.slice(0, 2);
+      var lockedRisks = r.risks.slice(2);
+
+      // Free risks
+      html += '<div class="rpt-section" data-i="' + (idx++) + '">';
+      html += '<div class="sec-title">⚠️ あなたのケースの最大リスク</div>';
+      html += '<div class="risks-wrap">';
+      freeRisks.forEach(function(risk){
+        var lv = normalizeLevel(risk.urgency);
+        html += '<div class="risk-card ' + lv + '">';
+        html += '<div class="risk-title">' + esc(risk.title || '') + '</div>';
+        html += '<div class="risk-desc">' + esc(risk.description || '') + '</div>';
+        if (risk.hidden_fact) {
+          html += '<div class="hidden-fact">';
+          html += '<div class="hidden-fact-title">💡 知っておくべき業界の事実</div>';
+          html += '<div class="hidden-fact-text">' + esc(risk.hidden_fact) + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '</div>';
+
+      // Locked remaining risks
+      if (lockedRisks.length) {
+        lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+        lockedHtml += '<div class="risks-wrap">';
+        lockedRisks.forEach(function(risk){
+          var lv = normalizeLevel(risk.urgency);
+          lockedHtml += '<div class="risk-card ' + lv + '">';
+          lockedHtml += '<div class="risk-title">' + esc(risk.title || '') + '</div>';
+          lockedHtml += '<div class="risk-desc">' + esc(risk.description || '') + '</div>';
+          if (risk.hidden_fact) {
+            lockedHtml += '<div class="hidden-fact">';
+            lockedHtml += '<div class="hidden-fact-title">💡 知っておくべき業界の事実</div>';
+            lockedHtml += '<div class="hidden-fact-text">' + esc(risk.hidden_fact) + '</div>';
+            lockedHtml += '</div>';
+          }
+          lockedHtml += '</div>';
+        });
+        lockedHtml += '</div>';
+        lockedHtml += '</div>';
+      }
+    }
+
+    // 5) Solutions
+    if (Array.isArray(r.solutions) && r.solutions.length) {
+      var sols = r.solutions.slice().sort(function(a,b){ return (a.priority||0) - (b.priority||0); });
+      lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+      lockedHtml += '<div class="sec-title">✅ あなたに最適な解決策</div>';
+      lockedHtml += '<div class="timeline">';
+      sols.forEach(function(s, i){
+        lockedHtml += '<div class="timeline-item">';
+        lockedHtml += '<div class="timeline-num">' + (s.priority || (i+1)) + '</div>';
+        lockedHtml += '<div class="timeline-content">';
+        lockedHtml += '<div class="timeline-title">' + esc(s.title || '') + '</div>';
+        lockedHtml += '<div class="timeline-desc">' + esc(s.description || '') + '</div>';
+        var badges = '';
+        if (s.timeframe) badges += '<span class="tl-badge time">⏱ ' + esc(s.timeframe) + '</span>';
+        if (s.cost)      badges += '<span class="tl-badge cost">💴 ' + esc(s.cost) + '</span>';
+        if (badges) lockedHtml += '<div class="timeline-badges">' + badges + '</div>';
+        if (s.cost_reduction_tip) {
+          lockedHtml += '<div class="cost-tip">';
+          lockedHtml += '<div class="cost-tip-title">💰 費用削減のポイント</div>';
+          lockedHtml += '<div class="cost-tip-text">' + esc(s.cost_reduction_tip) + '</div>';
+          lockedHtml += '</div>';
+        }
+        lockedHtml += '</div></div>';
+      });
+      lockedHtml += '</div>';
+      lockedHtml += '</div>';
+    }
+
+    // 6) Checklist
+    if (Array.isArray(r.checklist) && r.checklist.length) {
+      lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+      lockedHtml += '<div class="sec-title">📝 今すぐやるべきことチェックリスト</div>';
+      lockedHtml += '<div class="checklist-card">';
+      lockedHtml += '<div class="checklist-progress-wrap">';
+      lockedHtml += '<div class="checklist-progress-text" id="chkProgressText">0/' + r.checklist.length + '件 完了</div>';
+      lockedHtml += '<div class="checklist-progress-track"><div class="checklist-progress-fill" id="chkProgressFill" style="width:0%"></div></div>';
+      lockedHtml += '</div>';
+      r.checklist.forEach(function(c, i){
+        var pri = normalizeLevel(c.priority);
+        lockedHtml += '<div class="check-item" data-chk="' + i + '">';
+        lockedHtml += '<div class="check-box"></div>';
+        lockedHtml += '<div class="check-item-body">';
+        lockedHtml += '<div class="check-item-task">' + esc(c.task || '') + '</div>';
+        if (c.deadline) lockedHtml += '<div class="check-item-deadline">期限：' + esc(c.deadline) + '</div>';
+        lockedHtml += '</div>';
+        lockedHtml += '<div class="check-priority ' + pri + '">' + priorityLabel(pri) + '</div>';
+        lockedHtml += '</div>';
+      });
+      lockedHtml += '</div></div>';
+    }
+
+    // 7) Expert costs
+    if (Array.isArray(r.expert_costs) && r.expert_costs.length) {
+      lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+      lockedHtml += '<div class="sec-title">💰 あなたのケースの専門家費用の目安</div>';
+      lockedHtml += '<div class="expert-grid">';
+      r.expert_costs.forEach(function(e){
+        lockedHtml += '<div class="expert-cost-card">';
+        lockedHtml += '<div class="expert-cost-name">' + esc(e.expert || '') + '</div>';
+        lockedHtml += '<div class="expert-cost-amount">' + esc(e.cost || '') + '</div>';
+        if (e.negotiable) {
+          var negText = String(e.negotiable || '');
+          var isYes     = /できる/.test(negText) && !/できない/.test(negText) && !/限定的|交渉余地/.test(negText);
+          var isPartial = /限定的|交渉余地|難しい/.test(negText);
+          var negClass  = isYes ? 'yes' : (isPartial ? 'partial' : 'no');
+          lockedHtml += '<div><span class="negotiable-badge ' + negClass + '">' + addLineBreaks(esc(e.negotiable)) + '</span></div>';
+        }
+        lockedHtml += '<div class="expert-cost-reason">' + addLineBreaks(esc(e.reason || '')) + '</div>';
+        if (e.warning) {
+          lockedHtml += '<div class="expert-warning">';
+          lockedHtml += '<div class="expert-warning-title">⚠️ 注意</div>';
+          lockedHtml += '<div class="expert-warning-text">' + esc(e.warning) + '</div>';
+          lockedHtml += '</div>';
+        }
+        lockedHtml += '</div>';
+      });
+      lockedHtml += '</div></div>';
+    }
+
+    // 8) Deadlines
+    if (Array.isArray(r.deadlines) && r.deadlines.length) {
+      lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+      lockedHtml += '<div class="sec-title">📅 あなたの相続手続き期限</div>';
+      lockedHtml += '<div class="deadline-wrap"><div class="deadline-scroll">';
+      lockedHtml += '<table class="deadline-table">';
+      lockedHtml += '<thead><tr><th>期限</th><th>手続き内容</th><th>重要度</th><th>期限を過ぎると</th></tr></thead><tbody>';
+      r.deadlines.forEach(function(d){
+        var imp = normalizeLevel(d.importance);
+        lockedHtml += '<tr>';
+        var periodHtml = esc(d.period || '')
+          .replace(/知った日から/g, '知った日から<br>')
+          .replace(/相続したことを/g, '相続したことを<br>');
+        lockedHtml += '<td><span class="deadline-badge period-badge">' + periodHtml + '</span></td>';
+        lockedHtml += '<td>' + esc(d.task || '') + '</td>';
+        lockedHtml += '<td><span class="deadline-badge ' + imp + '">' + (imp === 'high' ? '高' : imp === 'medium' ? '中' : '低') + '</span></td>';
+        lockedHtml += '<td><div class="deadline-risk">' + esc(d.risk_if_missed || '') + '</div></td>';
+        lockedHtml += '</tr>';
+      });
+      lockedHtml += '</tbody></table>';
+      lockedHtml += '</div></div></div>';
+    }
+
+    // 9) Warnings
+    if (Array.isArray(r.warnings) && r.warnings.length) {
+      lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+      lockedHtml += '<div class="sec-title">⚠️ 特に注意すべきこと</div>';
+      r.warnings.forEach(function(w){
+        if (w && typeof w === 'object') {
+          lockedHtml += '<div class="warning-card">';
+          lockedHtml += '<div class="warning-card-title">⚠️ ' + esc(w.title || '') + '</div>';
+          lockedHtml += '<div class="warning-card-text">' + esc(w.description || '') + '</div>';
+          lockedHtml += '</div>';
+        } else {
+          lockedHtml += '<div class="warning-card"><div class="warning-card-text">' + esc(w) + '</div></div>';
+        }
+      });
+      lockedHtml += '</div>';
+    }
+
+    // 10) Emergency banner
+    lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+    lockedHtml += '<div class="emergency-banner">';
+    lockedHtml += '<div class="emergency-icon">📋</div>';
+    lockedHtml += '<div class="emergency-title">このレポートを読んだあなたへ</div>';
+    lockedHtml += '<div class="emergency-subtitle">― 最後に、大切なことをお伝えします ―</div>';
+    lockedHtml += '<div class="emergency-text">相続は、知識があるかないかで結果が大きく変わります。</div>';
+    lockedHtml += '<div class="emergency-divider"></div>';
+    lockedHtml += '<div class="emergency-point"><span class="emergency-point-icon">✅</span><span class="emergency-point-text">専門家に相談する前に知識を持つことで費用を平均30%抑えられます。</span></div>';
+    lockedHtml += '<div class="emergency-point"><span class="emergency-point-icon">✅</span><span class="emergency-point-text">このレポートで把握したリスクを伝えるだけで専門家との相談時間が半分になります。</span></div>';
+    lockedHtml += '<div class="emergency-point"><span class="emergency-point-icon">✅</span><span class="emergency-point-text">相続完全攻略BOOKにはこのレポートをさらに深掘りした内容がすべて収録されています。</span></div>';
+    lockedHtml += '<div class="emergency-closing">まず一つだけ、今日から行動してみてください。</div>';
+    lockedHtml += '</div></div>';
+
+    // 11) LINE promo section
+    lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+    lockedHtml += '<div style="background:#F0FFF4; border:1px solid #06C755; border-radius:12px; padding:20px 24px; margin-bottom:22px;">';
+    lockedHtml += '<p style="font-size:18px; font-weight:700; color:#1A1A1A; margin-bottom:12px;">📩 相続完全攻略BOOKの購入はLINEから</p>';
+    lockedHtml += '<p style="font-weight:700; font-size:15px; color:#333333; line-height:1.8;">相続完全攻略BOOKの購入ページはLINEご登録後にお送りしていますので、<br>まだご登録がお済みでない方は上部のLINEボタンからご登録ください。</p>';
+    lockedHtml += '</div>';
+    lockedHtml += '</div>';
+
+    // 12) Trust badge
+    lockedHtml += '<div class="rpt-section" data-i="' + (idx++) + '">';
+    lockedHtml += '<div class="trust-badge">';
+    lockedHtml += '<div>✅ このレポートはAIが生成した参考情報です</div>';
+    lockedHtml += '<div>✅ 専門家への相談の代替にはなりません</div>';
+    lockedHtml += '<div>✅ 具体的な手続きは必ず専門家にご相談ください</div>';
+    lockedHtml += '</div></div>';
+
+    // Locked wrapper
+    html += '<div class="locked-section-wrapper">';
+    html += '<div class="locked-section">';
+    html += '<div class="locked-content">' + lockedHtml + '</div>';
+    html += '<div class="locked-overlay">';
+    html += '<div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:32px;"><span style="font-size:24px;">🔒</span><span style="font-size:20px; font-weight:700; color:#1A1A1A;">LINEご登録後に続きをご覧いただけます。</span></div>';
+    html += '<p style="font-size:16px; font-weight:700; color:#1A1A1A; margin-bottom:12px; text-align:center;">📩 LINE登録で下記特典が受け取れます。</p>';
+    html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left;">🎁 特典1：あなたの相続カスタムレポートの続き</span>';
+    html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left;">🎁 特典2：相続準備の教科書（購入ページURL）</span>';
+    html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left; margin-bottom:16px;">🎁 特典3：専門家に聞くべき質問リスト</span>';
+    html += '<a href="https://lin.ee/QdheaZp" target="_blank">';
+    html += '<img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="50" border="0">';
+    html += '</a>';
+    html += '<p style="font-size:12px; color:#CC0000; font-weight:600; margin-top:8px; text-align:center;">※ 登録後にご案内メッセージをお送りします</p>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    document.getElementById('reportBody').innerHTML = html;
+    document.getElementById('loadingWrap').classList.remove('show');
+    document.getElementById('reportWrap').classList.add('show');
+    scrollTop();
+
+    bindReportInteractions(r);
+    triggerFadeIn();
+  }
+
+  /* ───── Interactions ───── */
+  function bindReportInteractions(r) {
+    // Checklist toggle
+    qa('.check-item').forEach(function(item){
+      item.addEventListener('click', function(){
+        item.classList.toggle('checked');
+        updateChecklistProgress();
+      });
+    });
+
+    // CTA buttons
+    qa('[data-cta="book"]').forEach(function(btn){
+      btn.addEventListener('click', function(){ window.open(NOTE_PURCHASE_URL, '_blank'); });
+    });
+    qa('[data-cta="line"]').forEach(function(btn){
+      btn.addEventListener('click', function(){ window.open(LINE_REGISTER_URL, '_blank'); });
+    });
+  }
+
+  function updateChecklistProgress() {
+    var items = qa('.check-item');
+    if (!items.length) return;
+    var done = qa('.check-item.checked').length;
+    var pct = Math.round((done / items.length) * 100);
+    var fill = document.getElementById('chkProgressFill');
+    var text = document.getElementById('chkProgressText');
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = done + '/' + items.length + '件 完了';
+  }
+
+  function triggerFadeIn() {
+    qa('.rpt-section').forEach(function(sec){
+      var i = parseInt(sec.getAttribute('data-i'), 10) || 0;
+      setTimeout(function(){ sec.classList.add('visible'); }, i * 200);
+    });
+  }
+
+  /* ───── Restart ───── */
+  window.restart = function() {
+    document.querySelectorAll('input[type="radio"]').forEach(function(el){ el.checked = false; });
+    document.querySelectorAll('input[type="checkbox"]').forEach(function(el){ el.checked = false; });
+    document.querySelectorAll('.err').forEach(function(el){ el.classList.remove('show'); });
+    document.getElementById('reportBody').innerHTML = '';
+    document.getElementById('reportWrap').classList.remove('show');
+    document.getElementById('progressWrap').style.display = 'block';
+    document.getElementById('diagnoseBtn').disabled = true;
+    showStep(1);
+  };
+
+  /* ───── Init ───── */
+  document.getElementById('consentCheck').addEventListener('change', function(){
+    document.getElementById('diagnoseBtn').disabled = !this.checked;
+  });
+
+  document.getElementById('progressWrap').style.display = 'block';
+  showStep(1);
+
+})();
+</script>
+
+<!-- LINE自動応答に以下を設定してください：
+友達追加時のメッセージ：
+「つぐみるで診断いただきありがとうございます！
+あなたの診断結果を保存しました。
+
+相続完全攻略BOOKはこちらからご購入いただけます👇
+https://note.com/colto_official
+
+相続に関するご質問はいつでもこのLINEにメッセージをください。」
+-->
+</body>
+</html>
