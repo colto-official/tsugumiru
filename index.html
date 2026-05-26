@@ -1716,51 +1716,25 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     .then(function(res){
       if (!res.ok) {
         return res.json().then(function(e){
-          throw new Error((e.error && e.error.message) || ('APIエラー: ' + res.status));
+          throw new Error((e.error) || ('APIエラー: ' + res.status));
         });
       }
       return res.json();
     })
-    .then(function(data){
-      var responseText = data.content[0].text;
-      console.log('API Raw Response:', responseText);
-
-      // Step1: コードフェンスを全て除去
-      var cleaned = responseText;
-      cleaned = cleaned.replace(/```json/gi, '');
-      cleaned = cleaned.replace(/```/gi, '');
-      cleaned = cleaned.trim();
-
-      // Step2: {から}までを抽出
-      var firstBrace = cleaned.indexOf('{');
-      var lastBrace = cleaned.lastIndexOf('}');
-      if (firstBrace !== -1 && lastBrace !== -1) {
-          cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    .then(function(reportData){
+      if (!reportData || typeof reportData !== 'object') {
+        renderError('レポートの解析に失敗しました。もう一度お試しください。');
+        return;
       }
-
-      // Step3: パース
-      var reportData = null;
-      try {
-          reportData = JSON.parse(cleaned);
-      } catch(e) {
-          console.error('Parse error:', e);
-          console.error('API Raw Response (full):', responseText);
-          console.error('Cleaned text:', cleaned);
-          renderError('レポートの解析に失敗しました。\nデバッグ情報をコンソールで確認してください。（F12を押してConsoleタブを開く）');
-          return;
+      if (reportData.error) {
+        renderError(reportData.error);
+        return;
       }
-
-      if (!reportData) {
-          console.error('API Raw Response (full):', responseText);
-          renderError('レポートの解析に失敗しました。\nデバッグ情報をコンソールで確認してください。（F12を押してConsoleタブを開く）');
-          return;
-      }
-
       renderReport(reportData);
     })
     .catch(function(err){
       console.error('[tsugumiru] API error:', err);
-      renderError('', err && err.message ? err.message : '');
+      renderError(err && err.message ? err.message : 'エラーが発生しました。');
     });
   };
 
