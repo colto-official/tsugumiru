@@ -13,81 +13,70 @@ export default async function handler(req, res) {
     var body = req.body;
     var https = require('https');
 
-    var systemPrompt = 'JSONのみで返答。コードフェンス禁止。以下のJSON構造で返答すること。各項目は簡潔に。\n' +
-      '{"summary":"200文字以内","urgency_score":0-100の数値,"urgency_label":"ラベル",' +
-      '"risks":[{"title":"タイトル","description":"説明","urgency":"high","hidden_fact":"業界の事実"}],' +
-      '"solutions":[{"priority":1,"title":"タイトル","description":"説明","timeframe":"期間","cost":"費用","cost_reduction_tip":"コスト削減"}],' +
-      '"checklist":[{"task":"タスク","deadline":"今週中","priority":"high","reason":"理由"}],' +
-      '"expert_costs":[{"expert":"専門家","cost":"費用","reason":"理由","negotiable":"交渉可否","warning":"注意"}],' +
-      '"deadlines":[{"period":"期限","task":"手続き","importance":"high","risk_if_missed":"リスク"}],' +
-      '"warnings":[{"title":"タイトル","description":"説明"}]}';
-
-    var postData = JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 3000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: body.user }]
-    });
-
-    var apiResult = await new Promise(function(resolve, reject) {
-      var options = {
-        hostname: 'api.anthropic.com',
-        path: '/v1/messages',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'Content-Length': Buffer.byteLength(postData)
-        }
-      };
-
-      var req2 = https.request(options, function(response) {
-        var data = '';
-        response.on('data', function(chunk) { data += chunk; });
-        response.on('end', function() {
-          try { resolve(JSON.parse(data)); }
-          catch(e) { reject(new Error('API parse error: ' + data.substring(0, 200))); }
+    function callAPI(systemPrompt, userPrompt, maxTokens) {
+      return new Promise(function(resolve, reject) {
+        var postData = JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: maxTokens,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
         });
+
+        var options = {
+          hostname: 'api.anthropic.com',
+          path: '/v1/messages',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Length': Buffer.byteLength(postData)
+          }
+        };
+
+        var req2 = https.request(options, function(response) {
+          var data = '';
+          response.on('data', function(chunk) { data += chunk; });
+          response.on('end', function() {
+            try {
+              var parsed = JSON.parse(data);
+              var text = parsed.content[0].text;
+              text = text.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+              var first = text.indexOf('{');
+              var last = text.lastIndexOf('}');
+              if (first !== -1 && last !== -1) {
+                resolve(JSON.parse(text.substring(first, last + 1)));
+              } else {
+                reject(new Error('No JSON: ' + text.substring(0, 100)));
+              }
+            } catch(e) { reject(e); }
+          });
+        });
+        req2.on('error', reject);
+        req2.write(postData);
+        req2.end();
       });
-
-      req2.on('error', reject);
-      req2.write(postData);
-      req2.end();
-    });
-
-    if (!apiResult.content || !apiResult.content[0]) {
-      return res.status(500).json({ error: 'No content in API response' });
     }
 
-    var rawText = apiResult.content[0].text;
-    console.log('Raw text length:', rawText.length);
-    console.log('Raw text preview:', rawText.substring(0, 200));
+    var userInfo = body.user;
 
-    rawText = rawText.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-    var firstBrace = rawText.indexOf('{');
-    var lastBrace = rawText.lastIndexOf('}');
+    var part1 = await callAPI(
+      'JSONのみで返答。コードフェンス禁止。',
+      userInfo + '\n\n以下のJSONのみで返答:\n{"summary":"200文字以内の総評","urgency_score":0から100の数値,"urgency_label":"緊急度ラベル","risks":[{"title":"タイトル","description":"100文字以内","urgency":"high","hidden_fact":"50文字以内"}],"solutions":[{"priority":1,"title":"タイトル","description":"100文字以内","timeframe":"期間","cost":"費用","cost_reduction_tip":"50文字以内"}]}',
+      2000
+    );
 
-    if (firstBrace === -1 || lastBrace === -1) {
-      return res.status(500).json({ error: 'No JSON found in response', raw: rawText.substring(0, 500) });
-    }
+    var part2 = await callAPI(
+      'JSONのみで返答。コードフェンス禁止。',
+      userInfo + '\n\n以下のJSONのみで返答:\n{"checklist":[{"task":"タスク","deadline":"今週中","priority":"high","reason":"50文字以内"}],"expert_costs":[{"expert":"専門家名","cost":"費用","reason":"50文字以内","negotiable":"交渉可否","warning":"50文字以内"}],"deadlines":[{"period":"期限","task":"手続き","importance":"high","risk_if_missed":"50文字以内"}],"warnings":[{"title":"タイトル","description":"100文字以内"}]}',
+      2000
+    );
 
-    rawText = rawText.substring(firstBrace, lastBrace + 1);
-
-    try {
-      var reportData = JSON.parse(rawText);
-      return res.status(200).json(reportData);
-    } catch(parseError) {
-      console.error('JSON parse error:', parseError.message);
-      console.error('Raw text:', rawText.substring(0, 500));
-      return res.status(500).json({
-        error: 'JSON parse failed: ' + parseError.message,
-        raw: rawText.substring(0, 500)
-      });
-    }
+    var reportData = Object.assign({}, part1, part2);
+    return res.status(200).json(reportData);
 
   } catch(error) {
-    console.error('Handler error:', error.message);
+    console.error('Error:', error.message);
     return res.status(500).json({ error: error.message });
   }
 }
