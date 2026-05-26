@@ -1592,101 +1592,26 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
   /* ───── Prompt builder (JSON) ───── */
   function buildUserPrompt(a) {
-    return '以下の相続診断結果をもとに、この方だけのカスタム相続レポートをJSON形式で作成してください。\n\n' +
+    return '以下の相続診断結果をもとにカスタムレポートをJSON形式で作成してください。\n\n' +
       '診断内容：\n' +
-      '被相続人との関係：' + a.relation + '\n' +
-      '相続人の人数：' + a.heirs + '\n' +
-      '遺言書の有無：' + a.will + '\n' +
-      '現在の状況：' + a.status + '\n' +
-      '財産の種類：' + a.assets.join('、') + '\n' +
-      '財産規模：' + a.amount + '\n' +
-      '懸念事項：' + a.concerns.join('、') + '\n\n' +
-      '以下の点を必ず守ってください。\n\n' +
-      '1. summaryは以下の構成にする\n' +
-      '・最初の1文：「あなたのケースは○○という状況です」と診断内容を具体的に言語化する\n' +
-      '・2文目：「最も注意すべきことは○○です」と核心を突く\n' +
-      '・3文目：「今すぐ行動しないと○○のリスクがあります」と緊迫感を作る\n' +
-      '・一般論は一切書かない\n\n' +
-      '2. risksは以下の内容を必ず含める\n' +
-      '・専門家が教えてくれない業界の裏側の情報を1つ以上含める\n' +
-      '・「知らないと○○万円損する」という具体的な数字を含める\n' +
-      '・「○○%の人がやってしまう失敗」という形式で書く\n' +
-      '・入力された財産の種類・規模・懸念事項に完全特化した内容にする\n\n' +
-      '3. solutionsは以下の内容を必ず含める\n' +
-      '・「専門家に相談する前にこれをやると費用が○%削減できる」という具体的な方法\n' +
-      '・「○○という専門家は避けた方がいい・△△という専門家を選ぶべき理由」\n' +
-      '・明日から実践できる具体的なアクション\n' +
-      '・各解決策に具体的な期間と費用の目安を必ず入れる\n\n' +
-      '4. checklistは以下の内容にする\n' +
-      '・「今日中にやること」「今週中にやること」「今月中にやること」の3段階で分類する\n' +
-      '・各タスクに「なぜこれが重要か」を一言添える\n' +
-      '・チェックリストを全部実行すると何が解決するかを明確にする\n\n' +
-      '5. expert_costsは以下の内容にする\n' +
-      '・各専門家の費用の適正価格と相場を具体的に示す\n' +
-      '・「この費用は値引き交渉できる・できない」を明記する\n' +
-      '・「この専門家に頼むと損をするケース」を正直に書く\n\n' +
-      '6. deadlinesは以下の内容にする\n' +
-      '・期限を過ぎた場合の具体的なリスクと金額的損失を明記する\n' +
-      '・「この期限だけは絶対に守らないといけない理由」を書く\n\n' +
-      '7. warningsは以下の内容にする\n' +
-      '・「○○業者が使う常套句と見分け方」\n' +
-      '・「相続でよくある詐欺・トラブルの手口」\n' +
-      '・「やってしまいがちな取り返しのつかないミス」\n' +
-      'を入力された状況に特化して書く\n\n' +
-      '以下のJSON形式のみで返答する。JSON以外のテキストは一切含めない。\n\n' +
+      '関係：' + a.relation + '\n' +
+      '相続人：' + a.heirs + '\n' +
+      '遺言書：' + a.will + '\n' +
+      '状況：' + a.status + '\n' +
+      '財産：' + a.assets.join('、') + '\n' +
+      '規模：' + a.amount + '\n' +
+      '懸念：' + a.concerns.join('、') + '\n\n' +
+      '以下のJSON形式のみで返答する。コードフェンス不要。\n\n' +
       '{\n' +
-      '  "summary": "総評テキスト（診断内容に完全特化・一般論なし・200文字程度）",\n' +
-      '  "urgency_score": 0から100の数値,\n' +
-      '  "urgency_label": "緊急度のラベル",\n' +
-      '  "risks": [\n' +
-      '    {\n' +
-      '      "title": "リスクのタイトル（具体的な数字を含める）",\n' +
-      '      "description": "詳細説明（業界の裏側・知らないと損する情報を含める）",\n' +
-      '      "urgency": "high または medium または low",\n' +
-      '      "hidden_fact": "専門家が教えてくれない業界の裏側の情報"\n' +
-      '    }\n' +
-      '  ],\n' +
-      '  "solutions": [\n' +
-      '    {\n' +
-      '      "priority": 1,\n' +
-      '      "title": "解決策のタイトル",\n' +
-      '      "description": "詳細説明（明日から実践できる具体的な内容）",\n' +
-      '      "timeframe": "期間",\n' +
-      '      "cost": "費用目安",\n' +
-      '      "cost_reduction_tip": "費用を削減できる具体的な方法"\n' +
-      '    }\n' +
-      '  ],\n' +
-      '  "checklist": [\n' +
-      '    {\n' +
-      '      "task": "やること",\n' +
-      '      "deadline": "今日中・今週中・今月中のいずれか",\n' +
-      '      "priority": "high または medium または low",\n' +
-      '      "reason": "なぜこれが重要か（一言）"\n' +
-      '    }\n' +
-      '  ],\n' +
-      '  "expert_costs": [\n' +
-      '    {\n' +
-      '      "expert": "専門家の種類",\n' +
-      '      "cost": "費用目安",\n' +
-      '      "reason": "必要な理由",\n' +
-      '      "negotiable": "値引き交渉できる・できない",\n' +
-      '      "warning": "この専門家に頼むと損をするケース"\n' +
-      '    }\n' +
-      '  ],\n' +
-      '  "deadlines": [\n' +
-      '    {\n' +
-      '      "period": "期限",\n' +
-      '      "task": "手続き内容",\n' +
-      '      "importance": "high または medium または low",\n' +
-      '      "risk_if_missed": "期限を過ぎた場合の具体的なリスク"\n' +
-      '    }\n' +
-      '  ],\n' +
-      '  "warnings": [\n' +
-      '    {\n' +
-      '      "title": "注意事項のタイトル",\n' +
-      '      "description": "具体的な内容（業者の手口・詐欺・ミスの事例）"\n' +
-      '    }\n' +
-      '  ]\n' +
+      '  "summary": "総評200文字",\n' +
+      '  "urgency_score": 数値,\n' +
+      '  "urgency_label": "ラベル",\n' +
+      '  "risks": [{"title":"","description":"","urgency":"high/medium/low","hidden_fact":""}],\n' +
+      '  "solutions": [{"priority":1,"title":"","description":"","timeframe":"","cost":"","cost_reduction_tip":""}],\n' +
+      '  "checklist": [{"task":"","deadline":"今日中/今週中/今月中","priority":"high/medium/low","reason":""}],\n' +
+      '  "expert_costs": [{"expert":"","cost":"","reason":"","negotiable":"","warning":""}],\n' +
+      '  "deadlines": [{"period":"","task":"","importance":"high/medium/low","risk_if_missed":""}],\n' +
+      '  "warnings": [{"title":"","description":""}]\n' +
       '}';
   }
 
@@ -1708,7 +1633,7 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 4000,
+        max_tokens: 8000,
         system: SYSTEM_PROMPT,
         user: buildUserPrompt(answers)
       })
