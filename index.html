@@ -1701,7 +1701,7 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     document.getElementById('loadingWrap').classList.add('show');
     scrollTop();
 
-    fetch('/.netlify/functions/claude-api', {
+    fetch('/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
