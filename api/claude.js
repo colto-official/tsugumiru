@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     var https = require('https');
     var postData = JSON.stringify({
       model: body.model || 'claude-haiku-4-5-20251001',
-      max_tokens: body.max_tokens || 4000,
+      max_tokens: body.max_tokens || 8000,
       system: body.system,
       messages: [{ role: 'user', content: body.user }]
     });
