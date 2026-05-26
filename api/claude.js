@@ -57,7 +57,26 @@ export default async function handler(req, res) {
       req2.end();
     });
 
-    return res.status(result.statusCode).json(result.body);
+    var rawText = result.body.content[0].text;
+
+    // コードフェンスを除去
+    rawText = rawText.replace(/^```json\s*/i, '');
+    rawText = rawText.replace(/\s*```\s*$/i, '');
+    rawText = rawText.trim();
+
+    // {から}を抽出
+    var firstBrace = rawText.indexOf('{');
+    var lastBrace = rawText.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      rawText = rawText.substring(firstBrace, lastBrace + 1);
+    }
+
+    try {
+      var parsedReport = JSON.parse(rawText);
+      return res.status(200).json(parsedReport);
+    } catch(e) {
+      return res.status(200).json(result.body);
+    }
 
   } catch(error) {
     return res.status(500).json({ error: error.message });
