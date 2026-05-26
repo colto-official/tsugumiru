@@ -21,9 +21,9 @@ export default async function handler(req, res) {
 
     var https = require('https');
     var postData = JSON.stringify({
-      model: body.model || 'claude-haiku-4-5-20251001',
-      max_tokens: body.max_tokens || 8000,
-      system: body.system,
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2000,
+      system: '必ずJSONのみで返答する。説明文不要。コードフェンス不要。以下のキーのみ含めること：summary、urgency_score、urgency_label、risks（最大3件）、solutions（最大3件）、checklist（最大5件）、expert_costs（最大3件）、deadlines（最大4件）、warnings（最大3件）。各フィールドは簡潔に100文字以内。' + (body.system || ''),
       messages: [{ role: 'user', content: body.user }]
     });
 
