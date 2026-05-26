@@ -63,13 +63,13 @@ export default async function handler(req, res) {
     var part1 = await callAPI(
       'JSONのみで返答。コードフェンス禁止。',
       userInfo + '\n\n以下のJSONのみで返答:\n{"summary":"200文字以内の総評","urgency_score":0から100の数値,"urgency_label":"緊急度ラベル","risks":[{"title":"タイトル","description":"100文字以内","urgency":"high","hidden_fact":"50文字以内"}],"solutions":[{"priority":1,"title":"タイトル","description":"100文字以内","timeframe":"期間","cost":"費用","cost_reduction_tip":"50文字以内"}]}',
-      2000
+      8192
     );
 
     var part2 = await callAPI(
       'JSONのみで返答。コードフェンス禁止。',
       userInfo + '\n\n以下のJSONのみで返答:\n{"checklist":[{"task":"タスク","deadline":"今週中","priority":"high","reason":"50文字以内"}],"expert_costs":[{"expert":"専門家名","cost":"費用","reason":"50文字以内","negotiable":"交渉可否","warning":"50文字以内"}],"deadlines":[{"period":"期限","task":"手続き","importance":"high","risk_if_missed":"50文字以内"}],"warnings":[{"title":"タイトル","description":"100文字以内"}]}',
-      2000
+      8192
     );
 
     var reportData = Object.assign({}, part1, part2);
