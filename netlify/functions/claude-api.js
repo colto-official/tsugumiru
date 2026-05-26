@@ -25,7 +25,7 @@ exports.handler = async function(event, context) {
 
     var requestBody = {
       model: body.model || 'claude-opus-4-6',
-      max_tokens: body.max_tokens || 8000,
+      max_tokens: body.max_tokens || 4000,
       system: body.system,
       messages: [{ role: 'user', content: body.user }]
     };
