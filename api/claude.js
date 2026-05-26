@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       messages: [{ role: 'user', content: body.user }]
     });
 
-    var result = await new Promise(function(resolve, reject) {
+    var apiResult = await new Promise(function(resolve, reject) {
       var options = {
         hostname: 'api.anthropic.com',
         path: '/v1/messages',
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
         response.on('data', function(chunk) { data += chunk; });
         response.on('end', function() {
           try {
-            resolve({ statusCode: response.statusCode, body: JSON.parse(data) });
+            resolve(JSON.parse(data));
           } catch(e) {
             reject(new Error('Parse error: ' + data));
           }
@@ -57,26 +57,17 @@ export default async function handler(req, res) {
       req2.end();
     });
 
-    var rawText = result.body.content[0].text;
-
-    // コードフェンスを除去
-    rawText = rawText.replace(/^```json\s*/i, '');
-    rawText = rawText.replace(/\s*```\s*$/i, '');
-    rawText = rawText.trim();
-
-    // {から}を抽出
+    // テキストを取得してコードフェンスを除去
+    var rawText = apiResult.content[0].text;
+    rawText = rawText.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     var firstBrace = rawText.indexOf('{');
     var lastBrace = rawText.lastIndexOf('}');
     if (firstBrace !== -1 && lastBrace !== -1) {
       rawText = rawText.substring(firstBrace, lastBrace + 1);
     }
 
-    try {
-      var parsedReport = JSON.parse(rawText);
-      return res.status(200).json(parsedReport);
-    } catch(e) {
-      return res.status(200).json(result.body);
-    }
+    var reportData = JSON.parse(rawText);
+    return res.status(200).json(reportData);
 
   } catch(error) {
     return res.status(500).json({ error: error.message });
@@ -84,8 +75,6 @@ export default async function handler(req, res) {
 }
 
 export const config = {
-  api: {
-    bodyParser: true,
-  },
+  api: { bodyParser: true },
   maxDuration: 60
 };
