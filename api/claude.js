@@ -35,10 +35,12 @@ export default async function handler(req, res) {
         };
 
         var req2 = https.request(options, function(response) {
-          var data = '';
-          response.on('data', function(chunk) { data += chunk; });
+          response.setEncoding('utf8');
+          var chunks = [];
+          response.on('data', function(chunk) { chunks.push(chunk); });
           response.on('end', function() {
             try {
+              var data = chunks.join('');
               var parsed = JSON.parse(data);
               var text = parsed.content[0].text;
               text = text.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
