@@ -2041,21 +2041,28 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
   /* ───── checkAndRestoreReport ───── */
   window.checkAndRestoreReport = function() {
+    console.log('checkAndRestoreReport called');
     try {
       var savedData = localStorage.getItem('tsugumiru_report');
-      var savedTime = localStorage.getItem('tsugumiru_report_time');
-      if (savedData && savedTime) {
-        var elapsed = Date.now() - parseInt(savedTime);
-        if (elapsed < 24 * 60 * 60 * 1000) {
-          var savedReport = JSON.parse(savedData);
-          if (savedReport && savedReport.summary) {
-            hideAll();
-            document.getElementById('progressWrap').style.display = 'none';
-            renderReport(savedReport);
-          }
-        }
+      console.log('savedData exists:', !!savedData);
+      if (!savedData) {
+        alert('診断データが見つかりません。もう一度診断してください。');
+        return;
       }
-    } catch(e) {}
+      var savedReport = JSON.parse(savedData);
+      console.log('savedReport:', savedReport && savedReport.summary ? 'OK' : 'NG');
+      if (savedReport && savedReport.summary) {
+        hideAll();
+        document.getElementById('progressWrap').style.display = 'none';
+        document.getElementById('loadingWrap').classList.remove('show');
+        renderReport(savedReport);
+      } else {
+        alert('診断データが正しくありません。もう一度診断してください。');
+      }
+    } catch(e) {
+      console.error('Restore error:', e);
+      alert('エラーが発生しました：' + e.message);
+    }
   };
 
   /* ───── Restart ───── */
