@@ -2092,6 +2092,36 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     }
   }
 
+  // タブに戻った時にlocalStorageから復元
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      // レポートが表示されていない場合のみ復元を試みる
+      if (!document.getElementById('reportWrap').classList.contains('show')) {
+        try {
+          var savedData = localStorage.getItem('tsugumiru_report');
+          var savedTime = localStorage.getItem('tsugumiru_report_time');
+          if (savedData && savedTime) {
+            var elapsed = Date.now() - parseInt(savedTime);
+            var hours24 = 24 * 60 * 60 * 1000;
+            if (elapsed < hours24) {
+              var savedReport = JSON.parse(savedData);
+              if (savedReport && savedReport.summary) {
+                document.getElementById('progressWrap').style.display = 'none';
+                document.getElementById('loadingWrap').classList.remove('show');
+                [1,2,3,4].forEach(function(n){
+                  document.getElementById('step'+n).classList.remove('active');
+                });
+                renderReport(savedReport);
+              }
+            }
+          }
+        } catch(e) {
+          console.log('Restore error:', e);
+        }
+      }
+    }
+  });
+
 })();
 </script>
 
