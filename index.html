@@ -1722,6 +1722,14 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
   }
 
   function renderReport(r) {
+    // 診断結果をBase64エンコードしてURLパラメータに保存
+    try {
+      var encoded = btoa(encodeURIComponent(JSON.stringify(r)));
+      var newUrl = window.location.origin + window.location.pathname + '?report=' + encoded;
+      window.history.replaceState(null, '', newUrl);
+    } catch(e) {
+      console.log('URL save error:', e);
+    }
     var html = '';
     var idx = 0;
 
@@ -1965,9 +1973,11 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left;">🎁 特典1：あなたの相続カスタムレポートの続き</span>';
     html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left;">🎁 特典2：相続準備の教科書（購入ページURL）</span>';
     html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left; margin-bottom:16px;">🎁 特典3：専門家に聞くべき質問リスト</span>';
+    html += '<p style="font-size:13px; color:#555555; margin-bottom:12px;">このページのURLをコピーしてLINEに送ることで<br>続きをいつでも確認できます。</p>';
     html += '<a href="https://lin.ee/QdheaZp" target="_blank">';
     html += '<img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="50" border="0">';
     html += '</a>';
+    html += '<button id="copyUrlBtn" style="background:#F0F7F4; border:1px solid #2E8B57; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:700; color:#2E8B57; cursor:pointer; margin-top:8px; font-family:inherit;">このURLをコピーする</button>';
     html += '<p style="font-size:12px; color:#CC0000; font-weight:600; margin-top:8px; text-align:center;">※ 登録後にご案内メッセージをお送りします</p>';
     html += '</div>';
     html += '</div>';
@@ -1984,6 +1994,17 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
   /* ───── Interactions ───── */
   function bindReportInteractions(r) {
+    // Copy URL button
+    var copyBtn = document.getElementById('copyUrlBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+          copyBtn.textContent = 'コピーしました！';
+          setTimeout(function() { copyBtn.textContent = 'このURLをコピーする'; }, 2000);
+        });
+      });
+    }
+
     // Checklist toggle
     qa('.check-item').forEach(function(item){
       item.addEventListener('click', function(){
@@ -2038,6 +2059,22 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
   document.getElementById('progressWrap').style.display = 'block';
   showStep(1);
+
+  // URLパラメータから診断結果を復元
+  var urlParams = new URLSearchParams(window.location.search);
+  var reportParam = urlParams.get('report');
+  if (reportParam) {
+    try {
+      var savedReport = JSON.parse(decodeURIComponent(atob(reportParam)));
+      if (savedReport && savedReport.summary) {
+        document.getElementById('progressWrap').style.display = 'none';
+        document.getElementById('step1').classList.remove('active');
+        renderReport(savedReport);
+      }
+    } catch(e) {
+      console.log('Report restore error:', e);
+    }
+  }
 
 })();
 </script>
