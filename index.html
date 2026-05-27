@@ -2044,18 +2044,43 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     console.log('checkAndRestoreReport called');
     try {
       var savedData = localStorage.getItem('tsugumiru_report');
-      console.log('savedData exists:', !!savedData);
       if (!savedData) {
         alert('診断データが見つかりません。もう一度診断してください。');
         return;
       }
       var savedReport = JSON.parse(savedData);
-      console.log('savedReport:', savedReport && savedReport.summary ? 'OK' : 'NG');
       if (savedReport && savedReport.summary) {
-        hideAll();
-        document.getElementById('progressWrap').style.display = 'none';
-        document.getElementById('loadingWrap').classList.remove('show');
-        renderReport(savedReport);
+        // ロックセクションを完全に削除する
+        var lockedWrapper = document.querySelector('.locked-section-wrapper');
+        if (lockedWrapper) {
+          lockedWrapper.remove();
+        }
+
+        // reportWrapが表示されていない場合は表示する
+        var reportWrap = document.getElementById('reportWrap');
+        if (reportWrap && !reportWrap.classList.contains('show')) {
+          hideAll();
+          document.getElementById('progressWrap').style.display = 'none';
+          document.getElementById('loadingWrap').classList.remove('show');
+          renderReport(savedReport);
+        } else {
+          // すでに表示されている場合はロックを解除するだけ
+          var lockedOverlay = document.querySelector('.locked-overlay');
+          if (lockedOverlay) lockedOverlay.remove();
+          var lockedContent = document.querySelector('.locked-content');
+          if (lockedContent) {
+            lockedContent.style.filter = 'none';
+            lockedContent.style.opacity = '1';
+            lockedContent.style.pointerEvents = 'auto';
+            lockedContent.style.userSelect = 'auto';
+          }
+          var lockedSection = document.querySelector('.locked-section');
+          if (lockedSection) {
+            lockedSection.style.maxHeight = 'none';
+            lockedSection.style.overflow = 'visible';
+          }
+        }
+        scrollTop();
       } else {
         alert('診断データが正しくありません。もう一度診断してください。');
       }
