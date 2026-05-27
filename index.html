@@ -1534,10 +1534,10 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
       .replace(/複数の不動産をまとめて/g, '<br>複数の不動産をまとめて')
       .replace(/必ず3件以上の見積もり/g, '<br>必ず3件以上の見積もり');
   }
-  function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  window.scrollTop = function() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   /* ───── Step UI ───── */
-  function hideAll() {
+  window.hideAll = function() {
     [1,2,3,4].forEach(function(n){ document.getElementById('step'+n).classList.remove('active'); });
     document.getElementById('loadingWrap').classList.remove('show');
     document.getElementById('reportWrap').classList.remove('show');
@@ -1728,7 +1728,7 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     scrollTop();
   }
 
-  function renderReport(r) {
+  window.renderReport = function(r) {
     // 診断結果をBase64エンコードしてURLパラメータに保存
     try {
       var encoded = btoa(encodeURIComponent(JSON.stringify(r)));
