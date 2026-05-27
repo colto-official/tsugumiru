@@ -1730,6 +1730,13 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     } catch(e) {
       console.log('URL save error:', e);
     }
+    // レポートデータをlocalStorageに保存
+    try {
+      localStorage.setItem('tsugumiru_report', JSON.stringify(r));
+      localStorage.setItem('tsugumiru_report_time', Date.now().toString());
+    } catch(e) {
+      console.log('Save error:', e);
+    }
     var html = '';
     var idx = 0;
 
@@ -1969,15 +1976,10 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     html += '<div class="locked-content">' + lockedHtml + '</div>';
     html += '<div class="locked-overlay">';
     html += '<div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:32px;"><span style="font-size:24px;">🔒</span><span style="font-size:20px; font-weight:700; color:#1A1A1A;">LINEご登録後に続きをご覧いただけます。</span></div>';
-    html += '<p style="font-size:16px; font-weight:700; color:#1A1A1A; margin-bottom:12px; text-align:center;">📩 LINE登録で下記特典が受け取れます。</p>';
-    html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left;">🎁 特典1：あなたの相続カスタムレポートの続き</span>';
-    html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left;">🎁 特典2：相続準備の教科書（購入ページURL）</span>';
-    html += '<span style="font-size:14px; font-weight:700; color:#1A1A1A; line-height:2.2; display:block; text-align:left; margin-bottom:16px;">🎁 特典3：専門家に聞くべき質問リスト</span>';
-    html += '<p style="font-size:13px; color:#555555; margin-bottom:12px;">このページのURLをコピーしてLINEに送ることで<br>続きをいつでも確認できます。</p>';
+    html += '<p style="font-size:14px; color:#555555; line-height:2.0; margin-bottom:16px; text-align:left;">① 下のLINEボタンをタップして登録する<br>② このページに戻ってくる<br>③ 続きが自動で表示されます</p>';
     html += '<a href="https://lin.ee/QdheaZp" target="_blank">';
     html += '<img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="50" border="0">';
     html += '</a>';
-    html += '<button id="copyUrlBtn" style="background:#F0F7F4; border:1px solid #2E8B57; border-radius:8px; padding:10px 16px; font-size:14px; font-weight:700; color:#2E8B57; cursor:pointer; margin-top:8px; font-family:inherit;">このURLをコピーする</button>';
     html += '<p style="font-size:12px; color:#CC0000; font-weight:600; margin-top:8px; text-align:center;">※ 登録後にご案内メッセージをお送りします</p>';
     html += '</div>';
     html += '</div>';
@@ -1994,17 +1996,6 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
   /* ───── Interactions ───── */
   function bindReportInteractions(r) {
-    // Copy URL button
-    var copyBtn = document.getElementById('copyUrlBtn');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', function() {
-        navigator.clipboard.writeText(window.location.href).then(function() {
-          copyBtn.textContent = 'コピーしました！';
-          setTimeout(function() { copyBtn.textContent = 'このURLをコピーする'; }, 2000);
-        });
-      });
-    }
-
     // Checklist toggle
     qa('.check-item').forEach(function(item){
       item.addEventListener('click', function(){
@@ -2042,6 +2033,8 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
   /* ───── Restart ───── */
   window.restart = function() {
+    localStorage.removeItem('tsugumiru_report');
+    localStorage.removeItem('tsugumiru_report_time');
     document.querySelectorAll('input[type="radio"]').forEach(function(el){ el.checked = false; });
     document.querySelectorAll('input[type="checkbox"]').forEach(function(el){ el.checked = false; });
     document.querySelectorAll('.err').forEach(function(el){ el.classList.remove('show'); });
@@ -2059,6 +2052,29 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
   document.getElementById('progressWrap').style.display = 'block';
   showStep(1);
+
+  // localStorageから診断結果を復元（24時間以内のもの）
+  try {
+    var savedData = localStorage.getItem('tsugumiru_report');
+    var savedTime = localStorage.getItem('tsugumiru_report_time');
+    if (savedData && savedTime) {
+      var elapsed = Date.now() - parseInt(savedTime);
+      var hours24 = 24 * 60 * 60 * 1000;
+      if (elapsed < hours24) {
+        var savedReport = JSON.parse(savedData);
+        if (savedReport && savedReport.summary) {
+          document.getElementById('progressWrap').style.display = 'none';
+          document.getElementById('step1').classList.remove('active');
+          renderReport(savedReport);
+        }
+      } else {
+        localStorage.removeItem('tsugumiru_report');
+        localStorage.removeItem('tsugumiru_report_time');
+      }
+    }
+  } catch(e) {
+    console.log('Restore error:', e);
+  }
 
   // URLパラメータから診断結果を復元
   var urlParams = new URLSearchParams(window.location.search);
