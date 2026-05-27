@@ -1984,9 +1984,10 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     html += '<div class="locked-overlay">';
     html += '<div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:32px;"><span style="font-size:24px;">🔒</span><span style="font-size:20px; font-weight:700; color:#1A1A1A;">LINEご登録後に続きをご覧いただけます。</span></div>';
     html += '<p style="font-size:14px; color:#555555; line-height:2.0; margin-bottom:16px; text-align:left;">① 下のLINEボタンをタップして登録する<br>② このページに戻ってくる<br>③ 続きが自動で表示されます</p>';
-    html += '<a href="https://lin.ee/QdheaZp" target="_blank">';
+    html += '<a onclick="window.open(\'https://lin.ee/QdheaZp\', \'_blank\'); setTimeout(function(){ checkAndRestoreReport(); }, 3000);" style="cursor:pointer;">';
     html += '<img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="50" border="0">';
     html += '</a>';
+    html += '<button onclick="checkAndRestoreReport()" style="background:#2E8B57; color:white; border:none; border-radius:8px; padding:12px 20px; font-size:15px; font-weight:700; cursor:pointer; margin-top:12px; width:100%; font-family:inherit;">✅ LINE登録しました（続きを見る）</button>';
     html += '<p style="font-size:12px; color:#CC0000; font-weight:600; margin-top:8px; text-align:center;">※ 登録後にご案内メッセージをお送りします</p>';
     html += '</div>';
     html += '</div>';
@@ -2037,6 +2038,25 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
       setTimeout(function(){ sec.classList.add('visible'); }, i * 200);
     });
   }
+
+  /* ───── checkAndRestoreReport ───── */
+  window.checkAndRestoreReport = function() {
+    try {
+      var savedData = localStorage.getItem('tsugumiru_report');
+      var savedTime = localStorage.getItem('tsugumiru_report_time');
+      if (savedData && savedTime) {
+        var elapsed = Date.now() - parseInt(savedTime);
+        if (elapsed < 24 * 60 * 60 * 1000) {
+          var savedReport = JSON.parse(savedData);
+          if (savedReport && savedReport.summary) {
+            hideAll();
+            document.getElementById('progressWrap').style.display = 'none';
+            renderReport(savedReport);
+          }
+        }
+      }
+    } catch(e) {}
+  };
 
   /* ───── Restart ───── */
   window.restart = function() {
@@ -2098,58 +2118,6 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
       console.log('Report restore error:', e);
     }
   }
-
-  // タブに戻った時にlocalStorageから復元
-  document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') {
-      var reportWrap = document.getElementById('reportWrap');
-      if (reportWrap && !reportWrap.classList.contains('show')) {
-        try {
-          var savedData = localStorage.getItem('tsugumiru_report');
-          var savedTime = localStorage.getItem('tsugumiru_report_time');
-          if (savedData && savedTime) {
-            var elapsed = Date.now() - parseInt(savedTime);
-            var hours24 = 24 * 60 * 60 * 1000;
-            if (elapsed < hours24) {
-              var savedReport = JSON.parse(savedData);
-              if (savedReport && savedReport.summary) {
-                hideAll();
-                document.getElementById('progressWrap').style.display = 'none';
-                renderReport(savedReport);
-              }
-            }
-          }
-        } catch(e) {
-          console.log('Restore error:', e);
-        }
-      }
-    }
-  });
-
-  // ページキャッシュから戻った時にlocalStorageから復元
-  window.addEventListener('pageshow', function(event) {
-    var reportWrap = document.getElementById('reportWrap');
-    if (reportWrap && !reportWrap.classList.contains('show')) {
-      try {
-        var savedData = localStorage.getItem('tsugumiru_report');
-        var savedTime = localStorage.getItem('tsugumiru_report_time');
-        if (savedData && savedTime) {
-          var elapsed = Date.now() - parseInt(savedTime);
-          var hours24 = 24 * 60 * 60 * 1000;
-          if (elapsed < hours24) {
-            var savedReport = JSON.parse(savedData);
-            if (savedReport && savedReport.summary) {
-              hideAll();
-              document.getElementById('progressWrap').style.display = 'none';
-              renderReport(savedReport);
-            }
-          }
-        }
-      } catch(e) {
-        console.log('Restore error:', e);
-      }
-    }
-  });
 
 })();
 </script>
