@@ -2035,18 +2035,26 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
       }
       var savedReport = JSON.parse(savedData);
       if (savedReport && savedReport.summary) {
-        // reportBodyを完全にクリアしてから再描画
+        // ロック関連の要素を全て強制削除
+        var lockEls = document.querySelectorAll('[class*="lock"], [class*="Lock"], [id*="lock"], [id*="Lock"]');
+        lockEls.forEach(function(el) { el.remove(); });
+
+        // blurやpointer-eventsを解除
+        var allEls = document.querySelectorAll('*');
+        allEls.forEach(function(el) {
+          el.style.filter = '';
+          el.style.pointerEvents = '';
+          el.style.userSelect = '';
+          el.style.webkitFilter = '';
+        });
+
+        // レポートを再描画
         document.getElementById('reportBody').innerHTML = '';
         document.getElementById('reportWrap').classList.remove('show');
-
-        // 全ステップを非表示
         hideAll();
         document.getElementById('progressWrap').style.display = 'none';
         document.getElementById('loadingWrap').classList.remove('show');
-
-        // レポートを再描画
         renderReport(savedReport);
-        scrollTop();
       } else {
         alert('診断データが正しくありません。もう一度診断してください。');
       }
