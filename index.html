@@ -1472,6 +1472,7 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
   'use strict';
 
   /* ───── Config ───── */
+
   // APIキーはサーバーサイドで設定してください
   var API_KEY = '';
   var MODEL = 'claude-opus-4-6';
@@ -1507,7 +1508,7 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;')
-      .replace(/ /g, '')
+      .replace(/\u0000/g, '')
       .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(match) { return match; })
       .replace(/[\uD800-\uDFFF]/g, '');
   }
@@ -1674,21 +1675,14 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
   function tryParseJson(raw) {
     if (!raw) return null;
     var text = String(raw).trim();
-
-    // コードフェンスを除去
     text = text.replace(/^```json\s*/i, '').replace(/\s*```\s*$/i, '');
     text = text.replace(/^```\s*/i, '').replace(/\s*```\s*$/i, '');
     text = text.trim();
-
-    // 1. そのままパース
     try { return JSON.parse(text); } catch(e1) {}
-
-    // 2. {から}を抽出してパース
     var m = text.match(/\{[\s\S]*\}/);
     if (m) {
         try { return JSON.parse(m[0]); } catch(e2) {}
     }
-
     return null;
   }
 
@@ -1729,15 +1723,6 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
   }
 
   window.renderReport = function(r) {
-    // 診断結果をBase64エンコードしてURLパラメータに保存
-    try {
-      var encoded = btoa(encodeURIComponent(JSON.stringify(r)));
-      var newUrl = window.location.origin + window.location.pathname + '?report=' + encoded;
-      window.history.replaceState(null, '', newUrl);
-    } catch(e) {
-      console.log('URL save error:', e);
-    }
-    // レポートデータをlocalStorageに保存
     try {
       localStorage.setItem('tsugumiru_report', JSON.stringify(r));
       localStorage.setItem('tsugumiru_report_time', Date.now().toString());
@@ -2116,21 +2101,6 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
     console.log('Restore error:', e);
   }
 
-  // URLパラメータから診断結果を復元
-  var urlParams = new URLSearchParams(window.location.search);
-  var reportParam = urlParams.get('report');
-  if (reportParam) {
-    try {
-      var savedReport = JSON.parse(decodeURIComponent(atob(reportParam)));
-      if (savedReport && savedReport.summary) {
-        document.getElementById('progressWrap').style.display = 'none';
-        document.getElementById('step1').classList.remove('active');
-        renderReport(savedReport);
-      }
-    } catch(e) {
-      console.log('Report restore error:', e);
-    }
-  }
 
 })();
 </script>
