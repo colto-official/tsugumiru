@@ -2063,6 +2063,13 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
           lockedWrapper.style.maxHeight = 'none';
         }
 
+        // CSSクラスでblurが設定されている場合も解除
+        var style = document.createElement('style');
+        style.innerHTML = '.locked-content { filter: none !important; -webkit-filter: none !important; }' +
+          '.locked-section { max-height: none !important; overflow: visible !important; }' +
+          '.locked-section-wrapper { max-height: none !important; overflow: visible !important; }';
+        document.head.appendChild(style);
+
         scrollTop();
 
       } else {
