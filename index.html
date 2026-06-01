@@ -36,7 +36,7 @@
 
     /* ─── Header ─── */
     .header { width: 100%; line-height: 0; margin: 0; padding: 0; }
-    .header-image { width: 100%; height: auto; display: block; }
+    .header-image { width: 100%; max-width: 100%; height: auto; display: block; }
 
     /* ─── Container ─── */
     .container { max-width: 720px; margin: 0 auto; padding: 28px 16px 80px; }
@@ -881,6 +881,7 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
+      word-break: break-all;
       background: #FFFFFF;
       font-size: 14px;
     }
@@ -911,7 +912,7 @@
     .deadline-table th:nth-child(2),
     .deadline-table td:nth-child(2) { width: 26%; word-break: break-word; }
     .deadline-table th:nth-child(3),
-    .deadline-table td:nth-child(3) { width: 12%; text-align: center; vertical-align: middle; }
+    .deadline-table td:nth-child(3) { width: 15%; text-align: center; vertical-align: middle; white-space: nowrap; word-break: keep-all; }
     .deadline-table th:nth-child(4),
     .deadline-table td:nth-child(4) { width: 38%; }
     .deadline-table tbody tr:nth-child(odd) td { background: #FFFFFF; }
@@ -928,9 +929,9 @@
       word-break: break-word;
       max-width: 100%;
     }
-    .deadline-badge.high   { background: #CC0000; }
-    .deadline-badge.medium { background: #E07B00; }
-    .deadline-badge.low    { background: #888888; }
+    .deadline-badge.high   { background: #CC0000; white-space: nowrap; word-break: keep-all; }
+    .deadline-badge.medium { background: #E07B00; white-space: nowrap; word-break: keep-all; }
+    .deadline-badge.low    { background: #888888; white-space: nowrap; word-break: keep-all; }
     .deadline-badge.period-badge {
       background: #0077B6;
       color: #FFFFFF;
