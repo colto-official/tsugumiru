@@ -51,6 +51,18 @@
       padding: 0 !important;
     }
 
+    /* スマホ用ヘッダー拡大 */
+    @media (max-width: 480px) {
+      .header {
+        overflow: hidden;
+      }
+      .header-image {
+        width: 250% !important;
+        max-width: 250% !important;
+        margin-left: -75% !important;
+      }
+    }
+
     /* ─── Container ─── */
     .container { max-width: 720px; margin: 0 auto; padding: 28px 16px 80px; }
 
