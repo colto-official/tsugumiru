@@ -1205,11 +1205,11 @@
     }
     .locked-section {
       position: relative;
-      overflow: visible;
-      max-height: none;
+      overflow: hidden;
+      max-height: 400px;
     }
     .locked-section .locked-content {
-      filter: none;
+      filter: blur(4px);
       pointer-events: none;
       user-select: none;
       opacity: 0.7;
@@ -2065,9 +2065,10 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
 
         // CSSクラスでblurが設定されている場合も解除
         var style = document.createElement('style');
-        style.innerHTML = '.locked-content { filter: none !important; -webkit-filter: none !important; }' +
+        style.innerHTML = '.locked-content { filter: none !important; -webkit-filter: none !important; pointer-events: auto !important; user-select: auto !important; opacity: 1 !important; }' +
           '.locked-section { max-height: none !important; overflow: visible !important; }' +
-          '.locked-section-wrapper { max-height: none !important; overflow: visible !important; }';
+          '.locked-section-wrapper { max-height: none !important; overflow: visible !important; }' +
+          '.locked-overlay { display: none !important; }';
         document.head.appendChild(style);
 
         scrollTop();
