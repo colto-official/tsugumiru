@@ -36,7 +36,12 @@
 
     /* ─── Header ─── */
     .header { width: 100%; line-height: 0; margin: 0; padding: 0; }
-    .header-image { width: 100%; max-width: 100%; height: auto; display: block; }
+    .header-image {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      display: block !important;
+    }
 
     /* ─── Container ─── */
     .container { max-width: 720px; margin: 0 auto; padding: 28px 16px 80px; }
@@ -912,7 +917,12 @@
     .deadline-table th:nth-child(2),
     .deadline-table td:nth-child(2) { width: 26%; word-break: break-word; }
     .deadline-table th:nth-child(3),
-    .deadline-table td:nth-child(3) { width: 15%; text-align: center; vertical-align: middle; white-space: nowrap; word-break: keep-all; }
+    .deadline-table td:nth-child(3) {
+      width: 15%;
+      text-align: center;
+      vertical-align: middle;
+      padding: 4px 2px;
+    }
     .deadline-table th:nth-child(4),
     .deadline-table td:nth-child(4) { width: 38%; }
     .deadline-table tbody tr:nth-child(odd) td { background: #FFFFFF; }
@@ -929,9 +939,9 @@
       word-break: break-word;
       max-width: 100%;
     }
-    .deadline-badge.high   { background: #CC0000; white-space: nowrap; word-break: keep-all; }
-    .deadline-badge.medium { background: #E07B00; white-space: nowrap; word-break: keep-all; }
-    .deadline-badge.low    { background: #888888; white-space: nowrap; word-break: keep-all; }
+    .deadline-badge.high   { background: #CC0000; display: inline-block; text-align: center; width: auto; max-width: 100%; white-space: nowrap; font-size: 11px; padding: 2px 4px; }
+    .deadline-badge.medium { background: #E07B00; display: inline-block; text-align: center; width: auto; max-width: 100%; white-space: nowrap; font-size: 11px; padding: 2px 4px; }
+    .deadline-badge.low    { background: #888888; display: inline-block; text-align: center; width: auto; max-width: 100%; white-space: nowrap; font-size: 11px; padding: 2px 4px; }
     .deadline-badge.period-badge {
       background: #0077B6;
       color: #FFFFFF;
@@ -1258,7 +1268,7 @@
 <body>
 
 <div class="header">
-  <img src="header.svg" alt="つぐみる" class="header-image" loading="eager" decoding="sync">
+  <img src="header.svg" alt="つぐみる" class="header-image" loading="eager" decoding="sync" style="width:100%;max-width:100%;height:auto;display:block;">
 </div>
 
 <div class="container">
