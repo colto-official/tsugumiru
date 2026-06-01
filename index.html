@@ -2035,26 +2035,36 @@ var LINE_REGISTER_URL = 'https://lin.ee/QdheaZp';
       }
       var savedReport = JSON.parse(savedData);
       if (savedReport && savedReport.summary) {
-        // ロック関連の要素を全て強制削除
-        var lockEls = document.querySelectorAll('[class*="lock"], [class*="Lock"], [id*="lock"], [id*="Lock"]');
-        lockEls.forEach(function(el) { el.remove(); });
 
-        // blurやpointer-eventsを解除
-        var allEls = document.querySelectorAll('*');
-        allEls.forEach(function(el) {
-          el.style.filter = '';
-          el.style.pointerEvents = '';
-          el.style.userSelect = '';
-          el.style.webkitFilter = '';
-        });
+        // locked-overlayのみ削除（コンテンツは残す）
+        var overlay = document.querySelector('.locked-overlay');
+        if (overlay) overlay.remove();
 
-        // レポートを再描画
-        document.getElementById('reportBody').innerHTML = '';
-        document.getElementById('reportWrap').classList.remove('show');
-        hideAll();
-        document.getElementById('progressWrap').style.display = 'none';
-        document.getElementById('loadingWrap').classList.remove('show');
-        renderReport(savedReport);
+        // locked-contentのblurを解除
+        var lockedContent = document.querySelector('.locked-content');
+        if (lockedContent) {
+          lockedContent.style.filter = 'none';
+          lockedContent.style.webkitFilter = 'none';
+          lockedContent.style.pointerEvents = 'auto';
+          lockedContent.style.userSelect = 'auto';
+        }
+
+        // locked-sectionのmax-heightとoverflowを解除
+        var lockedSection = document.querySelector('.locked-section');
+        if (lockedSection) {
+          lockedSection.style.maxHeight = 'none';
+          lockedSection.style.overflow = 'visible';
+        }
+
+        // locked-section-wrapperのoverflowを解除
+        var lockedWrapper = document.querySelector('.locked-section-wrapper');
+        if (lockedWrapper) {
+          lockedWrapper.style.overflow = 'visible';
+          lockedWrapper.style.maxHeight = 'none';
+        }
+
+        scrollTop();
+
       } else {
         alert('診断データが正しくありません。もう一度診断してください。');
       }
